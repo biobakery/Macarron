@@ -107,6 +107,8 @@ findModules <- function(se, dist.mat, annot, chem.info,
   rownames(mos) <- numlist
   colnames(mos) <- c("Total modules","Singletons","% Annotated modules","% successful HMDBs","Max classes/module","90p classes/module","Max subclasses/module", "90p subclasses/module")
   write.csv(mos, file="MoS_by_MMS.csv")
+  
+  message("Print MOS:")
   print(mos)
   
   final.mms <- readline(prompt="Enter minimum module size of choice: ")
