@@ -41,7 +41,7 @@ findModules <- function(se, dist.mat, annot, chem.info,
   
   #package
   library(dynamicTreeCut)
-  anno <-  as.data.frame(rowData(mbx))
+  anno <-  as.data.frame(rowData(se))
   mod.assn <- as.data.frame(anno[colnames(dist.mat),annot])
   colnames(mod.assn) <- annot
   

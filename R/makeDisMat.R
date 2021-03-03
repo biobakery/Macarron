@@ -10,7 +10,7 @@
 #' @return w distance matrix where distance is 1-bicor^3
 #' 
 #' @examples 
-#' mbx <- makeSumExp(feat_int,feat_anno,exp_meta)
+#' mbx <- makeSumExp(feat_int, feat_anno, exp_meta)
 #' w <- makeDisMat(mbx, ptype="diagnosis", preval=0.7)
 #' 
 #' @export
@@ -24,6 +24,8 @@ makeDisMat <- function(se, ptype, preval=0.7,
   opt.mem <- optimize.for == "memory"
   
   # packages
+  library(BiocParallel)
+  library(DelayedArray)
   library(WGCNA)
   library(ff)
   library(ffbase)
@@ -50,7 +52,7 @@ makeDisMat <- function(se, ptype, preval=0.7,
   # Union of features
   ind <- apply(ind,1,any)
   mat <- mat[ind,]
-  message(paste0(nrow(mat), " features are selected"))
+  message(paste0(nrow(mat), " features are selected."))
   
   
   # Compute correlation and distance matrices
@@ -71,6 +73,8 @@ makeDisMat <- function(se, ptype, preval=0.7,
       tmp[is.na(tmp)] <- 0
       tmp <- log2(tmp + 1)
       cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs")
+      cmat[is.na(cmat)] <- 0
+      cmat[cmat < 0] <- 0
       if(opt.mem) cmat <- as(cmat, "dsyMatrix")
       cmat
     }
@@ -85,7 +89,7 @@ makeDisMat <- function(se, ptype, preval=0.7,
     mmat <- mmat^3
     
     # Distance matrix
-    w=1-mmat
+    w = 1 - mmat
     message(paste0("Distance matrix with ",nrow(w)," features created."))
     w
     }else

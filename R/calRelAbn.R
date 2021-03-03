@@ -51,10 +51,10 @@ calRelAbn <- function(se, mod.assn, ptype){
       ind <- se[[ptype]] == g
       if(length(r) > 1){
         means <- apply(fint[ind,r],2,mean)
-        d <- data.frame(m, g, max(means))
+        d <- data.frame(m, g, max(means), stringsAsFactors = FALSE)
         colnames(d) <- c("module","grp","mma")
       }else{
-        d <- data.frame(m, g, mean(fint[ind,r]))
+        d <- data.frame(m, g, mean(fint[ind,r]), stringsAsFactors = FALSE)
         colnames(d) <- c("module","grp","mma")
       }
       means <- rbind(means,d)
