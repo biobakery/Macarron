@@ -3,6 +3,7 @@
 #' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
 #' @param ptype meta.data (phenotype/condition) to be used to evaluate prevalence of features.
 #' @param preval prevalence threshold (percentage). Default is 0.7
+#' @param BPPARAM serial or parallel processing with BiocParallel. Default: SerialParam (recommended for laptops). MulticoreParam() can be used when running MACARRoN on a cluster. 
 #' Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
 #' e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in 70% of A samples
 #' and (ii) features present in 70% of B samples will be considered for distance matrix generation. 
@@ -17,7 +18,7 @@
 
 
 makeDisMat <- function(se, ptype, preval=0.7,
-                         BPPARAM = BiocParallel::registered()[[1]],
+                         BPPARAM = BiocParallel::SerialParam(),
                          optimize.for = c("runtime", "memory"))
 {
   optimize.for <- match.arg(optimize.for)

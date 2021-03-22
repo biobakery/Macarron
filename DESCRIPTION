@@ -1,11 +1,32 @@
-Package: BioconductorTemplate
+Package: MACARRoN
 Type: Package
-Title: What the Package Does (Title Case)
+Title: "An R package for prioritization of bioactives from epidemiological and environmental metabolomics studies"
+Year: 2021
 Version: 0.99.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Amrisha Bhosle, Ludwig Geistlinger
+Maintainer: abhosle@broadinstitute.org
+Depends: 
+    R (>= 4.0.2)
+    SummarizedExperiment 
+Description: MACARRoN is a workflow for the prioritization of interesting bioactive small molecules from metabolomics experiments. Prioritization integrates strengths of evidences of bioactivity such as covariation with a standard/known metabolite, abundance relative to a known metabolite and association with an environmental or phenotypic indicator of bioactivity. Broadly, the workflow consists of stratified clustering of metabolic spectral features which co-vary in abundance in a condition, transfer of functional annotations, estimation of relative abundance and differential abundance analysis to identify associations between features and phenotype/condition.
+Imports: 
+    BiocParallel,
+    DelayedArray,
+    WGCNA,
+    ff,
+    ffbase,
+    data.table,
+    dynamicTreeCut,
+    MaAsLin2,
+    plyr,
+    psych
+Suggests: 
+    BiocStyle, 
+    knitr, 
+    markdown
+VignetteBuilder: knitr
+
+License: MIT + file LICENSE
+URL: http://huttenhower.sph.harvard.edu/macarron
 Encoding: UTF-8
 LazyData: true
