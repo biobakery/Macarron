@@ -4,82 +4,55 @@
   
 MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives) is a workflow to systematically identify and prioritize potentially bioactive (and often unannotated)
 small molecules in microbial community metabolomic datasets. It prioritizes metabolic features as "potentially bioactive" using a combination of covariance with standard i.e. annotated compounds, ecological properties such as prevalence and relative abundance and association with environmental parameters or phenotypes.
+
+If you use the MACARRoN software, please cite our manuscript: 
+
+If you have questions, please direct it to:
+[MACARRoN Forum](https://forum.biobakery.org/c/microbial-community-profiling/macarron)
+
+--------------------------------------------
    
-# Bioconductor Package Template
+## Contents ##
+* [Description](#description)
+* [Requirements](#requirements)
+* [Installation](#installation)
 
-## Introduction
+## Description
 
-> This page gives details concerning guiding principles and formatting required for Bioconductor packages. Also see [Official Bioconductor Package Guidelines](https://bioconductor.org/developers/package-guidelines/) for more information. 
+MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives) is a workflow to systematically identify and prioritize potentially bioactive (and often unannotated) small molecules in microbial community metabolomic datasets.
+
 ## Requirements
 
-- R-development version can be downloaded using the links below: 
-    - [Source](https://stat.ethz.ch/R/daily/)
-    - [macOS](https://mac.r-project.org/)
-    - [Windows](https://cran.r-project.org/bin/windows/base/rdevel.html)
-    
-- #### R Studio (recommended) 
-	- Direct to the link [HERE](https://rstudio.com/products/rstudio/download/) to get the suitable version of R studio based on the your Operating system. 
-	- After the installation is complete, configure a couple of things so that your code will be formatted the way that we prefer it for Bioconductor. 
-		-  Set the column width marker to 80 columns. You can find this in the ‘Tools’ menu if you select the ‘Global Options…’ and then look at the ‘Code Editing’ panel. Then make sure that you click the ‘show margin’ option and that it is set to 80 columns. This will help you see if your lines are too long.
-    
-		-   Second set up the tab to be 4 spaces. You can do this right above where you set the column width marker for 80.   
+MACARRoN is an R package that can be run as a set of R functions or via a command line wrapper.
      
 ## Installation
 
-> Getting started with the Bioconductor Template: 
-- Click on "**Use this Template**" button and fill out the new repository informations (name/description/access). 
-- Finally click on "**Create repository from template**" and you now have a new repository based on the Bioconductor Template following the standard layouts. 
+If only running from the command line, you do not need to install the MACARRoN package but you will need to install the MACARRoN dependencies.
 
-Alternatively, 
-- Direct to [Github Create New Repository](https://github.com/organizations/biobakery/repositories/new) and select the "**biobakery/Biocondutor-package-template**". Fill out other information (Repository name/description/access)
-- Finally click on "**Create repository**" and you now have a new repository based on the Bioconductor Template. 
+### From the command line ###
 
-**NOTE**: Make your repository "**Private**" unless it is ready to be released.
+1. Download the source: [MACARRoN.master.zip] (https://github.com/biobakery/MACARRoN/archive/master.zip)
+2. Decompress the download:
+    * ``$ tar xzvf MACARRoN-master.zip``
+3. Install the Bioconductor dependencies: SummarizedExperiment, BiocParallel, DelayedArray, WGCNA and Maaslin2.
+4. Install the CRAN dependencies:
+    * ``$ R -q -e "install.packages(c('optparse','logging','data.table','ff','ffbase','dynamicTreeCut','plyr','psych', 'ggplot2'), repos='http://cran.r-project.org')"``
+5. Install the MACARRoN package (only required if running as an R function).
 
-## Developing New Bioconductor Packages 
-### Setting up local development environment
-- Clone your recently created repository in your local development environment either using:
-    ``` 
-        git clone https://github.com/biobakery/<Name of your repository>
-    ```
-    or using the "**Clone or Download**" button. 
+### From R ###
 
-### Installing the dependencies
-- Get the latest or compatible version of the "**BiocManager**" and "**devtools**". Run the following installation code in the R console using R studio.  
-  Current Development Version of Bioconductor: 3.11
-    ```
-        if (!requireNamespace("BiocManager", quietly = TRUE))
-          install.packages("BiocManager")
-          install.packages("devtools"); library("devtools");
-        BiocManager::install(version = "3.10")
-        BiocManager::valid()              # checks for out of date packages
-    ```
-    Alternatively, 
-    Run the **/R/template.R** file which will install the latest version of "**BiocManager**" and "**devtools**" for you.
-- If the project has additional dependencies needed for the development, it is reccommended to be add them to "**Imports**" of the **DESCRIPTION** file. 
+To install the latest version of MACARRoN:
 
-## Working with existing packages 
-- Detailed instruction to use/clone the Hutlab's bioconductor packages are provided in landing page:
-    https://huttenhower.sph.harvard.edu/[toolName]
-- Example: 
-    ```
-    Getting up and running with MaAsLin2 using the bioconductor Template:
-    - RUN the template.R file which will install BiocManager and devtools for you. 
-    - RUN BiocManager::install("Maaslin2")
-    - RUN browseVignettes("Maaslin2") - to view the manual. 
-    This will give you the released version of Maaslin2 and you will now be able to run Maaslin2. 
-Additional details on the folder stucture and details available [HERE](http://bioconductor.org/developers/how-to/buildingPackagesForBioc/#basic-package-anatomy). 
+```{r, eval=FALSE}
+if(!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("MACARRoN")
+```
+To install the latest development version of MACARRoN:
 
-## Test workflow 
- Two of the main frameworks for testing are [RUnit](http://smarden.org/runit/) and [testthat](https://testthat.r-lib.org/). Additional examples and explanations are provided [here](http://bioconductor.org/developers/how-to/unitTesting-guidelines/). 
- 
- For this template, we are using testthat: 
-
-- Once you’re set up the workflow is simple. Modify your code or tests.
-- Test your package with ```devtools::test()```
-- (Optionally) Test you package using  **Ctrl/Cmd + Shift + T**.  
-
-Repeat until all tests pass.
- - Click "Run Tests" to see a sample demo. 
-For more information on testing, see [Offcial R testthat documentation](https://cran.r-project.org/web/packages/testthat/testthat.pdf) or [bioconductor guidelines for Unit test](https://bioconductor.org/developers/package-guidelines/#unittest). 
+```{r, eval=FALSE}
+install.packages("devtools")
+library("devtools")
+install_github("biobakery/MACARRoN")
+```
 
