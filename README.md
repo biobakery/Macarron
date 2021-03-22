@@ -1,8 +1,9 @@
 
 
-##### [Replace the contents of this README.MD file with the appropriate "Users manual" needed for the tool]  
+# MACARRoN User Manual #  
   
-   
+MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives) is a workflow to systematically identify and prioritize potentially bioactive (and often unannotated)
+small molecules in microbial community metabolomic datasets. It prioritizes metabolic features as "potentially bioactive" using a combination of covariance with standard i.e. annotated compounds, ecological properties such as prevalence and relative abundance and association with environmental parameters or phenotypes.
    
 # Bioconductor Package Template
 
