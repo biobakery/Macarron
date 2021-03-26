@@ -43,10 +43,10 @@ args$cores <- 1
 
 options <-
   optparse::OptionParser(usage = paste(
-    "%prog [options] ",
-    "<feature_abundances.csv> ",
-    "<feature_annotations.csv> ",
-    "<sample_metadata.csv> ",
+    "%prog [Inputs]\n",
+    "<feature_abundances.csv>\n",
+    "<feature_annotations.csv>\n",
+    "<sample_metadata.csv>\n",
     "<chemical_classification.csv> "
     )
 )
@@ -68,7 +68,7 @@ options <-
     type = "character",
     dest = "metadata_variable",
     default = args$metadata_variable,
-    help = paste("Metadata variable with multiple epidemiological or environmental conditions",
+    help = paste("Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors)",
             "[Default: First metadata column]")
 )
 options <- 
@@ -78,9 +78,9 @@ options <-
     type = "character",
     dest = "control_condition",
     default = args$control_condition,
-    help = paste("Category within <metadata variable> to be used as the control/reference condition",
-                 "for differential abundance calculations and bioactive identification" ,
-                 "[Default: First alphabetical category in metadata variable]")
+    help = paste("Condition within <metadata variable> to be used as the reference (control)",
+                 "for differential abundance analysis and prioritization",
+                 "[Default: Alphabetically first category in <metadata variable>]")
 )
 options <-
   optparse::add_option(
@@ -89,8 +89,8 @@ options <-
     type = "double",
     dest = "min_prevalence",
     default = args$min_prevalence,
-    help = paste0("Minimum percent of samples of each condition/category in <metadata variable> ",
-                  "in which feature is recorded" ,
+    help = paste0("Minimum percent of samples of each condition in <metadata variable> ",
+                  "in which metabolic feature is recorded ",
                   "[Default: %default]"
                   )
 )
@@ -101,7 +101,7 @@ options <-
     type = "character",
     dest = "execution_mode",
     default = args$execution_mode,
-    help = paste("BiocParallel Class for execution [ Default: %default ] [ Choices:",
+    help = paste0("BiocParallel Class for execution [Default: %default] [Choices:",
             toString(execution_mode_choices),
             "]"
             )
@@ -113,8 +113,8 @@ options <-
     type = "character",
     dest = "standard_identifier",
     default = args$standard_identifier,
-    help = paste("Annotation such as HMDB/METLIN/MoNA accession or metabolite name",
-            "[Default: First feature annotation column]")
+    help = paste("Annotation such as HMDB/METLIN/MoNA accession or metabolite name for an annotated metabolite feature",
+            "[Default: First column in annotation table]")
 )
 options <- 
   optparse::add_option(
@@ -133,7 +133,7 @@ options <-
     type = "character",
     dest = "fixed_effects",
     default = args$fixed_effects,
-    help = paste("Fixed effects for differential abundance linear model,",
+    help = paste("Maaslin2 parameter; Fixed effects for differential abundance linear model,",
             "comma-delimited for multiple effects",
             "[Default: all]")
 )
@@ -144,7 +144,7 @@ options <-
     type = "character",
     dest = "random_effects",
     default = args$random_effects,
-    help = paste("Random effects for differential abundance linear model,",
+    help = paste("Maaslin2 parameter; Random effects for differential abundance linear model,",
             "comma-delimited for multiple effects",
             "[Default: none]")
 )
@@ -155,10 +155,10 @@ options <-
         type = "character",
         dest = "reference",
         default = args$reference,
-        help = paste("The factor to use as a reference for",
+        help = paste("Maaslin2 parameter; The factor to use as a reference for",
             "a variable with more than two levels",
             "provided as a string of 'variable,reference'",
-            "semi-colon delimited for multiple variables [ Default: NA ]"
+            "semi-colon delimited for multiple variables [Default: NA]"
         )
     )
     options <-
@@ -168,8 +168,8 @@ options <-
         type = "double",
         dest = "cores",
         default = args$cores,
-        help = paste("The number of R processes to ",
-            "run in parallel for MaAsLin2[ Default: %default ]"
+        help = paste("Maaslin2 parameter; The number of R processes to",
+            "run in parallel [Default: %default]"
         )
     )
 
@@ -542,9 +542,9 @@ MACARRoN <-
 
     # Selecting optimum MMS and assigning features to modules
     #----------------------------------------------------------------------------------            
-    # Select an optimum MMS; first MMS where pann >= 25%; fann >= 25%; hscc >= 80%
+    # Select an optimum MMS; first MMS where pann >= 25%; fann >= 15%; hscc >= 80%
     if(is.null(min_module_size)){
-      chosen.mms <- as.numeric(head(rownames(mos[which(mos[,3] >= 25 & mos[,4] >= 25 & mos[,5] >= 80),]),1))
+      chosen.mms <- as.numeric(head(rownames(mos[which(mos[,3] >= 25 & mos[,4] >= 15 & mos[,5] >= 80),]),1))
     }else{
       chosen.mms <- as.numeric(min_module_size)
     }
@@ -719,6 +719,7 @@ MACARRoN <-
       suppressPackageStartupMessages(require(lib, character.only = TRUE))
     }
     print("Initiating prioritization")
+    all_prioritized <- NULL
     for (t in test.grps){
       # collect all scores
       logging::loginfo(paste0("Prioritizing metabolic features in condition: ",t))
@@ -750,25 +751,24 @@ MACARRoN <-
       all_param$efs_rank <- rank(all_param$efs)
       logging::loginfo("Assigning q-value ranks")
       all_param$qval_rank <- rank(-all_param$qval)
-      logging::loginfo("Assigning association with a standard metabolite ranks")
-      all_param$assoc_rank <- rank(all_param$association)
+      #logging::loginfo("Assigning association with a standard metabolite ranks")
+      #all_param$assoc_rank <- rank(all_param$association)
 
       # meta-rank
       logging::loginfo("Integrating ranks and prioritizing bioactives")
-      all_param$meta_rank <- harmonic.mean(t(all_param[,8:11]))
+      all_param$meta_rank <- harmonic.mean(t(all_param[,8:10]))
       ranked_features <- all_param[order(-all_param$meta_rank),]
       ranked_features$priority <- sapply(seq(1:nrow(ranked_features)), function(p) p*100/(nrow(ranked_features)))
-      colnames(ranked_features) <- c("relative_abundance (RA)",
-                                     "effect_size (ES)",
-                                     "q-value (Q)",
+      colnames(ranked_features) <- c("relative_abundance",
+                                     "effect_size",
+                                     "q_value",
                                      "perturbation",
                                      "module",
                                      "standard_identifier",
                                      "associated_with_standard",
-                                     "RA_rank",
-                                     "ES_rank",
-                                     "Q_rank",
-                                     "association_rank",
+                                     "relative_abundance_rank",
+                                     "effect_size_rank",
+                                     "q_value_rank",
                                      "meta_rank",
                                      "priority_percentage")
       final_df <- as.data.frame(cbind(ranked_features, anno[rownames(ranked_features),]))
@@ -776,8 +776,22 @@ MACARRoN <-
       file_loc = file.path(output, file_name)
       logging::loginfo(paste0("Writing prioritized bioactives in ",t," to file: ",file_loc))
       write.csv(final_df, file=file_loc)
-      return(final_df)
-    }                                                                                                                                                                                                        
+
+      char_ranked <- ranked_features[which(ranked_features$associated_with_standard == 1),]
+      char_df <- as.data.frame(cbind(char_ranked, anno[rownames(char_ranked),]))
+      file_name <- paste0("characterizable_bioactives_",t,".csv")
+      file_loc = file.path(output, file_name)
+      logging::loginfo(paste0("Writing characterizable bioactives in ",t," to file: ",file_loc))
+      write.csv(char_df, file=file_loc)
+
+      #Writing Summarized Input file ()
+      logging::loginfo(paste0("Writing summarized input file to ",output,"/summarized_input.csv"))
+      sum.input <- as.data.frame(cbind(se[[ptype]],t(assay(se))))
+      names(sum.input)[names(sum.input) == 'V1'] <- ptype
+      write.csv(sum.input, file = file.path(output,"summarized_input.csv"))  
+      all_prioritized <- rbind(all_prioritized, final_df)
+    }
+    return(all_prioritized)                                                                                                                                                                                                       
   }
 
 
