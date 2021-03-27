@@ -486,10 +486,10 @@ MACARRoN <-
 
       # % annotated modules
       has.std <-  sort(unique(mod.assn[which(mod.assn[,1] != "" & mod.assn$module !=0 ),2]))
-      pann <- rbind(pann, length(has.std)*100/max(mod.assn$module))
+      pann <- rbind(pann, round(length(has.std)*100/max(mod.assn$module),2))
 
       # % features associated with a standard (characterizable features)
-      fann <- rbind(fann, (nrow(mod.assn[which(mod.assn[,1] == "" & mod.assn$module %in% has.std),]))*100/nrow(mod.assn)) 
+      fann <- rbind(fann, round((nrow(mod.assn[which(mod.assn[,1] == "" & mod.assn$module %in% has.std),]))*100/nrow(mod.assn),2)) 
 
       # %  features with the same ID that land up in the same module
       same.mod <- NULL
@@ -503,7 +503,7 @@ MACARRoN <-
           same.mod <- rbind(same.mod,m)
         }
       }
-      hscc <- rbind(hscc, length(same.mod)*100/(length(same.mod)+length(diff.mod)))
+      hscc <- rbind(hscc, round(length(same.mod)*100/(length(same.mod)+length(diff.mod)),2))
 
       #functional heterogeneity of modules
       chem.cla <- NULL
