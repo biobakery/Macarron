@@ -488,7 +488,7 @@ MACARRoN <-
       has.std <-  sort(unique(mod.assn[which(mod.assn[,1] != "" & mod.assn$module !=0 ),2]))
       pann <- rbind(pann, length(has.std)*100/max(mod.assn$module))
 
-      # % features associated with a standard
+      # % features associated with a standard (characterizable features)
       fann <- rbind(fann, (nrow(mod.assn[which(mod.assn[,1] == "" & mod.assn$module %in% has.std),]))*100/nrow(mod.assn)) 
 
       # %  features with the same ID that land up in the same module
@@ -527,11 +527,11 @@ MACARRoN <-
     # Compile measures of success
     mos <- data.frame(cbind(totc, sing, pann, fann, hscc, maxc, perc, maxs, pers))
     rownames(mos) <- numlist
-    colnames(mos) <- c("Total modules",
-                       "Singletons",
-                       "% Annotated modules",
-                       "% Associated features",
-                       "% successful HMDBs",
+    colnames(mos) <- c("total modules",
+                       "singletons",
+                       "% annotated modules",
+                       "% characterizable features",
+                       "% successful classifications",
                        "Max classes/module",
                        "90p classes/module",
                        "Max subclasses/module", 
