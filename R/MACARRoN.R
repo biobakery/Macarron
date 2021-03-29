@@ -726,7 +726,7 @@ MACARRoN <-
       qval <- my.qvalue[which(my.qvalue$value == t),]
       rownames(qval) <- qval$feature
       qval <- qval[rownames(mod.assn),]
-      all_param <- as.data.frame(cbind(my.relab[,"rel.abun."],my.effsize[,t],qval[,"qvalue"]))
+      all_param <- as.data.frame(cbind(round(my.relab[,"rel.abun."],2),round(my.effsize[,t],2),signif(qval[,"qvalue"],3)))
       colnames(all_param) <- c("relab","efs","qval")
       rownames(all_param) <- rownames(mod.assn)
 
@@ -756,9 +756,10 @@ MACARRoN <-
 
       # meta-rank
       logging::loginfo("Integrating ranks and prioritizing bioactives")
-      all_param$meta_rank <- harmonic.mean(t(all_param[,8:10]))
+      all_param$meta_rank <- round(harmonic.mean(t(all_param[,8:10])),2)
       ranked_features <- all_param[order(-all_param$meta_rank),]
       ranked_features$priority <- sapply(seq(1:nrow(ranked_features)), function(p) p*100/(nrow(ranked_features)))
+      ranked_features$priority <- round(ranked_features$priority, 2)
       colnames(ranked_features) <- c("relative_abundance",
                                      "effect_size",
                                      "q_value",
