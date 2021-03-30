@@ -4,7 +4,7 @@ Title: "An R package for prioritization of bioactives from epidemiological and e
 Year: 2021
 Version: 0.99.0
 Author: Amrisha Bhosle, Ludwig Geistlinger
-Maintainer: abhosle@broadinstitute.org
+Maintainer: Amrisha Bhosle <abhosle@broadinstitute.org>
 Depends: 
     R (>= 4.0.0), SummarizedExperiment (>= 1.20.0)
 Description: MACARRoN is a workflow for the prioritization of interesting bioactive small molecules from metabolomics experiments. Prioritization integrates strengths of evidences of bioactivity such as covariation with a standard/known metabolite, abundance relative to a known metabolite and association with an environmental or phenotypic indicator of bioactivity. Broadly, the workflow consists of stratified clustering of metabolic spectral features which co-vary in abundance in a condition, transfer of functional annotations, estimation of relative abundance and differential abundance analysis to identify associations between features and phenotype/condition.
