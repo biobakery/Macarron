@@ -548,8 +548,8 @@ MACARRoN <-
     }else{
       chosen.mms <- as.numeric(min_module_size)
     }
-    logging::loginfo(paste0("Optimum Minimum Module Size for this dataset: ", as.numeric(head(rownames(mos[which(mos[,3] >= 25 & mos[,4] >= 25 & mos[,5] >= 80),]),1)))) 
-    logging::loginfo(paste0("Minimum Module Size used for this dataset (user provided): ", chosen.mms)) 
+    logging::loginfo(paste0("Optimum Minimum Module Size for this dataset: ", chosen.mms)) 
+    logging::loginfo(paste0("Minimum Module Size used for this dataset (user provided): ", min_module_size)) 
     mod.assn$module <- as.vector(dynamicTreeCut::cutreeDynamic(dendro = tree, 
                                                                distM = as.matrix(w), 
                                                                deepSplit = TRUE, 
