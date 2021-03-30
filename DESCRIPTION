@@ -16,7 +16,7 @@ Imports:
     ffbase,
     data.table,
     dynamicTreeCut,
-    MaAsLin2,
+    Maaslin2,
     plyr,
     psych
 Suggests: 
