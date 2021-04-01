@@ -543,12 +543,13 @@ MACARRoN <-
     # Selecting optimum MMS and assigning features to modules
     #----------------------------------------------------------------------------------            
     # Select an optimum MMS; first MMS where pann >= 25%; fann >= 15%; hscc >= 80%
+    opt.mms <- as.numeric(head(rownames(mos[which(mos[,3] >= 25 & mos[,4] >= 15 & mos[,5] >= 80),]),1))
     if(is.null(min_module_size)){
-      chosen.mms <- as.numeric(head(rownames(mos[which(mos[,3] >= 25 & mos[,4] >= 15 & mos[,5] >= 80),]),1))
+      chosen.mms <- opt.mms
     }else{
       chosen.mms <- as.numeric(min_module_size)
     }
-    logging::loginfo(paste0("Optimum Minimum Module Size for this dataset: ", chosen.mms)) 
+    logging::loginfo(paste0("Optimum Minimum Module Size for this dataset: ", opt.mms)) 
     logging::loginfo(paste0("Minimum Module Size used for this dataset (user provided): ", min_module_size)) 
     mod.assn$module <- as.vector(dynamicTreeCut::cutreeDynamic(dendro = tree, 
                                                                distM = as.matrix(w), 
