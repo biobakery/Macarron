@@ -15,7 +15,7 @@ for (lib in c('grDevices', 'ComplexHeatmap', 'circlize')) {
 args <- list()
 args$summarized_input <- NULL
 args$prioritized_features <- NULL
-args$top_percent <- 10
+args$top_percent <- 25
 args$feature_annotation <- NULL
 
 ###############################################################################
@@ -60,7 +60,7 @@ macaHeatMap <-
   function(
     summarized_input,
     prioritized_features,
-    top_percent = 10,
+    top_percent = 25,
     feature_annotation = NULL
 )
 {
@@ -80,6 +80,7 @@ macaHeatMap <-
 
   # Choose top p percent features and their abundance
   #----------------------------------------------------------------------------------
+  pri_feats$priority_percentage <- sapply(seq(1:nrow(pri_feats)), function(p) p*100/(nrow(pri_feats)))
   top_feats <- pri_feats[which(pri_feats$priority_percentage <= top_percent),]
   top_feats <- top_feats[order(top_feats$module),]
   only_abun <- as.data.frame(t(sum_input[,2:ncol(sum_input)]))
@@ -131,14 +132,14 @@ macaHeatMap <-
                            )
   if(is.null(feature_annotation)){
     rowAnn2 = HeatmapAnnotation(
-                            priority = anno_barplot(top_feats$priority_percentage, bar_width = 0.5, gp=gpar(fill = 9)),
-                            annotation_label = "top-ranked %",
+                            priority = anno_barplot(top_feats$rank, bar_width = 0.5, gp=gpar(fill = 9)),
+                            annotation_label = "rank",
                             which = 'row'
                             )
   }else{                                  
     rowAnn2 = HeatmapAnnotation(
-                            priority = anno_barplot(top_feats$priority_percentage, bar_width = 0.5),
-                            annotation_label = "top-ranked %",
+                            priority = anno_barplot(top_feats$rank, bar_width = 0.5),
+                            annotation_label = "rank",
                             which = 'row',
                             std_id = anno_text(top_feats[,feature_annotation], gp = gpar(fontsize=9),)
                             )
