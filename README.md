@@ -30,13 +30,9 @@ MACARRoN is an R package that can be run as a set of R functions or via a comman
 If only running from the command line, you do not need to install the MACARRoN package but you will need to install the MACARRoN dependencies.
 
 ### From the command line ###
-
-1. Download the source: [MACARRoN.master.zip] (https://github.com/biobakery/MACARRoN/archive/master.zip)
-2. Decompress the download:
-    * ``$ tar xzvf MACARRoN-master.zip``
-3. Install the Bioconductor dependencies: SummarizedExperiment, BiocParallel, DelayedArray, Maaslin2 and ComplexHeatmap.
-4. Install the CRAN dependencies:
-    * ``$ R -q -e "install.packages(c('optparse','logging','data.table','WGCNA','ff','ffbase','dynamicTreeCut','plyr','psych','ggplot2','circlize','grDevices'), repos='http://cran.r-project.org')"``
+1. Install the Bioconductor dependencies: SummarizedExperiment, BiocParallel, DelayedArray, Maaslin2 and ComplexHeatmap.
+2. Install the CRAN dependencies:
+    * ``$ R -q -e "install.packages(c('optparse','logging','data.table','WGCNA','ff','ffbase','dynamicTreeCut','plyr','psych','ggplot2','circlize','grDevices','xml2','RCurl','RJSONIO'), repos='http://cran.r-project.org')"``
 
 ### From R ###
 
