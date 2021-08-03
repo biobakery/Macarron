@@ -1,41 +1,47 @@
 #' Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix
 #' 
 #' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param ptype meta.data (phenotype/condition) to be used to evaluate prevalence of features.
-#' @param preval prevalence threshold (percentage). Default is 0.7
-#' @param BPPARAM serial or parallel processing with BiocParallel. Default: SerialParam (recommended for laptops). MulticoreParam() can be used when running MACARRoN on a cluster. 
+#' @param ptype metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = column 1
+#' @param preval prevalence threshold (percentage). Default = 0.7
+#' @param execution_mode serial or multi processing with BiocParallel. Default: "serial" (recommended for laptops). 
+#' "multi" may be used when running MACARRoN on a cluster. 
+#' 
 #' Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
-#' e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in 70% of A samples
-#' and (ii) features present in 70% of B samples will be considered for distance matrix generation. 
+#' e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in at least 70% of A samples
+#' and (ii) features present in at least 70% of B samples will be considered for distance matrix generation. 
 #' Correlation between feature abundances are is calculated using WGCNA::bicor()
-#' @return w distance matrix where distance is 1-bicor^3
+#' @return w distance matrix where distance = 1-bicor^3
 #' 
 #' @examples 
-#' mbx <- makeSumExp(feat_int, feat_anno, exp_meta)
-#' w <- makeDisMat(mbx, ptype="diagnosis", preval=0.7)
+#' se <- makeSumExp(feat_int, feat_anno, exp_meta)
+#' w <- makeDisMat(se)
 #' 
 #' @export
 
-
-makeDisMat <- function(se, ptype, preval=0.7,
-                         BPPARAM = BiocParallel::SerialParam(),
-                         optimize.for = c("runtime", "memory"))
+makeDisMat <- function(se, 
+                       ptype = NULL,
+                       preval=0.7,
+                       execution_mode = "serial",
+                       optimize.for = c("runtime", "memory"))
 {
   optimize.for <- match.arg(optimize.for)
   opt.mem <- optimize.for == "memory"
   
   # packages
-  library(BiocParallel)
-  library(DelayedArray)
-  library(WGCNA)
-  library(ff)
-  library(ffbase)
-  library(data.table)
-  
+  for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff', 'ffbase')) {
+    suppressPackageStartupMessages(require(lib, character.only = TRUE))
+  }
   # Abundance matrix
   mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
   
   # Phenotype i.e. groups/conditions
+  if(is.null(ptype)){
+    ptype <- names(colData(se))[1]
+    message(paste0("Metadata chosen for prevalence filtering: ",ptype))
+  }else{
+    ptype = ptype
+    message(paste0("Metadata chosen for prevalence filtering: ",ptype))
+  }
   grps <- unique(se[[ptype]])
   
   # Function: Get features that satisfy prevalence threshold in each condition
@@ -57,10 +63,7 @@ makeDisMat <- function(se, ptype, preval=0.7,
   
   
   # Compute correlation and distance matrices
-  # Small datasets
-  if(nrow(mat) <= 30000){
-    
-    #Function: Correlation matrix
+  if(nrow(mat) <= 25000){
     .getCorMat <- function(g)
     {
       message(g)
@@ -71,31 +74,29 @@ makeDisMat <- function(se, ptype, preval=0.7,
       colnames(tmp) <- colnames(gmat)
       tmp <- DelayedArray::DelayedArray(tmp)
       tmp[rownames(gmat), colnames(gmat)] <- gmat
-      tmp[is.na(tmp)] <- 0
-      tmp <- log2(tmp + 1)
-      cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs")
+      tmp <- log2(tmp)
+      options(warn=-1)
+      cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
+      options(warn=0)
       cmat[is.na(cmat)] <- 0
       cmat[cmat < 0] <- 0
       if(opt.mem) cmat <- as(cmat, "dsyMatrix")
       cmat
     }
     
+    if(execution_mode == "serial"){
+      exe.choice <- BiocParallel::SerialParam()
+    }else if(execution_mode == "multi"){
+      exe.choice <- BiocParallel::MultiParam()
+    }
+    
     # Apply on all groups/conditions
-    cmats <- BiocParallel::bplapply(grps, .getCorMat, BPPARAM = BPPARAM)
+    cmats <- BiocParallel::bplapply(grps, .getCorMat, BPPARAM = exe.choice)
     
     # Keep the best observed positive correlation for each pair of features
     mmat <- do.call(pmax, c(cmats, na.rm=TRUE))
-    
-    # Beta-scaling to ensure power law distribution
-    mmat <- mmat^3
-    
-    # Distance matrix
-    w = 1 - mmat
-    message(paste0("Distance matrix with ",nrow(w)," features created."))
-    w
-    }else
-      # Large datasets
-      {for (g in grps){
+    }else{
+      for (g in grps){
         message(g)
         inx <- se[[ptype]] == g
         gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=preval),inx]
@@ -104,14 +105,17 @@ makeDisMat <- function(se, ptype, preval=0.7,
         colnames(tmp) <- colnames(gmat)
         tmp <- DelayedArray::DelayedArray(tmp)
         tmp[rownames(gmat), colnames(gmat)] <- gmat
-        tmp[is.na(tmp)] <- 0
-        tmp <- log2(tmp + 1)
-        cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs")
+        tmp <- log2(tmp)
+        options(warn=-1)
+        cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
+        options(warn=0)
+        cmat[is.na(cmat)] <- 0
+        cmat[cmat < 0] <- 0
         message(paste0(g," cmat created"))
         assign(paste0(g,"_ff"),as.ff(cmat))
         message(paste0(g,"_ff created"))
         rm(cmat)
-        }
+       }
     
     # Keep the best observed positive correlation for each pair of features
     mmat <- matrix(0, nrow=nrow(mat), ncol=nrow(mat))
@@ -123,11 +127,13 @@ makeDisMat <- function(se, ptype, preval=0.7,
     }
     rownames(mmat) <- rownames(mat)
     colnames(mmat) <- rownames(mat)
-    mmat = mmat^3 
+    }
+  # Beta-scaling
+  mmat = mmat^3 
     
-    # Distance matrix
-    w = 1 - mmat
-    message(paste0("Distance matrix with ",nrow(w)," features created."))
-    w}
+  # Distance matrix
+  w = 1 - mmat
+  message(paste0("Distance matrix with ",nrow(w)," features created."))
+  w
 }
   
