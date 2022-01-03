@@ -1,23 +1,24 @@
 #' Cluster metabolic features based on covarying abundances into modules
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param w distance matrix from function MACARRoN::makeDisMat()
-#' @param chem.tax chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. Can be
-#' created using the decorateID.R utility of MACARRoN. Annotation specified with "annot" and annotation in the first column of the
-#' chemical taxonomy file must match.
-#' @param annot a feature annotation of choice e.g. HMDB ID/Pubchem CID/Metabolite name. Default: Column 1 in annotation dataframe
-#' @param mms minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic().
+#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
+#' @param w distance matrix from function MACARRoN::makeDisMat().
+#' @param chem_tax chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. 
+#' Can be created using the decorateID.R utility of MACARRoN. 
+#' Annotation specified with "annot" and annotation in the first column of the chemical taxonomy file must match.
+#' @param annot a feature annotation of choice e.g. HMDB ID/Pubchem CID/Metabolite name. Default: Column 1 in annotation table.
+#' @param mms minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
+#' Default is cube root of number of prevalent features.
 #' @param evaluateMOS examine measure of success for modules identified using mms, mms + 5, mms + 10, mms - 5, mms - 10
-#' Default mms is the cube root of the number of features in distance matrix
+#' 
 #' 
 #' @examples 
-#' mod.assn <- findMacMod(se, w, chem.tax)
+#' mod.assn <- findMacMod(se, w, chem_tax)
 #' 
 #' @return mod.assn metabolic features clustered into "modules" based on covarying abundances
 
 findMacMod <- function(se, 
                         w, 
-                        chem.tax = NULL,
+                        chem_tax = NULL,
                         annot = NULL,
                         mms = NULL,
                         evaluateMOS = TRUE)
@@ -107,7 +108,7 @@ findMacMod <- function(se,
         dat <- mod.assn.ann[which(mod.assn.ann[,2] == i & mod.assn.ann[,1] != ""),]
         mod.tax <- NULL
         for (d in unique(dat[,1])){
-          feat.tax <- chem.tax[which(chem.tax[,1] == d),]
+          feat.tax <- chem_tax[which(chem_tax[,1] == d),]
           mod.tax <- rbind(mod.tax,feat.tax)
         }
         cls <- rbind(scl, length(unique(mod.tax[,3])))
@@ -121,7 +122,7 @@ findMacMod <- function(se,
       # % features in homogeneously annotated modules
       dat <- as.data.frame(unique(mod.assn.ann))
       dat$class <- sapply(as.character(dat[,1]), 
-                          function(x) as.character(chem.tax[which(chem.tax[,1] == x),3]))
+                          function(x) as.character(chem_tax[which(chem_tax[,1] == x),3]))
       rownames(dat) <- NULL
       dat$class <- as.character(dat$class)
       dat$class[which(dat$class == "character(0)")] <- ""
@@ -185,7 +186,7 @@ findMacMod <- function(se,
   assignChemTax <- function(m){
     if(m > 0){
       annotated.features <- unique(mod.assn[which(mod.assn$module == m & mod.assn[,1] != ""),1])
-      classes <- toString(unique(chem.tax[which(chem.tax[,1] %in% annotated.features),3]))
+      classes <- toString(unique(chem_tax[which(chem_tax[,1] %in% annotated.features),3]))
     }else{
       classes <- ""
     }

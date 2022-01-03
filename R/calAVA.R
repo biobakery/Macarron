@@ -5,9 +5,9 @@
 #' feature. For every feature, mean abundance in each phenotype or condition is calculated and the maximum is considered
 #' for AVA calculation. Singletons are assigned an AVA of 1.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param mod.assn the output of MACARRoN::findMacMod()
-#' @param ptype metadata of interest. Default: column 1 of metadata dataframe. 
+#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
+#' @param mod.assn the output of MACARRoN::findMacMod().
+#' @param ptype metadata of interest. Default: Column 2 of metadata table. 
 #' @param anchor.anno anchor identification. Default: column 2 of annotation dataframe.
 #' Note: ptype must be consistent across ava, q-value and effect-size calculations.
 #' @return mac.ava

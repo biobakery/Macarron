@@ -4,8 +4,8 @@
 #' test and control (reference) samples. For the specified metadata variable, effect size 
 #' is calculated for all test categories against the reference category.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param mac.qval the output of MACARRoN::calQval()
+#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
+#' @param mac.qval the output of MACARRoN::calQval().
 #' @return mac.efs
 #' 
 #' @examples 

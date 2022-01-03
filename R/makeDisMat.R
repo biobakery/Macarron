@@ -1,15 +1,15 @@
-#' Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix
+#' Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param ptype metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = column 1
-#' @param preval prevalence threshold (percentage). Default = 0.7
+#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
+#' @param ptype metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.
+#' @param preval prevalence threshold (percentage). Default = 0.7.
 #' @param execution_mode serial or multi processing with BiocParallel. Default: "serial" (recommended for laptops). 
 #' "multi" may be used when running MACARRoN on a cluster. 
 #' 
 #' Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
 #' e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in at least 70% of A samples
-#' and (ii) features present in at least 70% of B samples will be considered for distance matrix generation. 
-#' Correlation between feature abundances are is calculated using WGCNA::bicor()
+#' and (ii) features present in at least 70% of B samples, will be considered for distance matrix generation. 
+#' Correlation between feature abundances are is calculated using WGCNA::bicor().
 #' @return w distance matrix where distance = 1-bicor^3
 #' 
 #' @examples 
@@ -39,7 +39,7 @@ makeDisMat <- function(se,
     ptype <- names(colData(se))[1]
     message(paste0("Metadata chosen for prevalence filtering: ",ptype))
   }else{
-    ptype = ptype
+    ptype <- ptype
     message(paste0("Metadata chosen for prevalence filtering: ",ptype))
   }
   grps <- unique(se[[ptype]])

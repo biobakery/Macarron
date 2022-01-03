@@ -5,13 +5,13 @@
 #' Default analysis method is "LM". Can be run on multiple cores.
 #' ptype and ref (reference group) should be the same as the one specified for effect size calculation.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param mod.assn the output of MACARRoN::findMacMod()
-#' @param ptype metadata of interest. Default: column 1. 
+#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
+#' @param mod.assn the output of MACARRoN::findMacMod().
+#' @param ptype metadata of interest. Default: Column 2 of metadata table. 
 #' Note: ptype must be consistent across ava, q-value and effect-size calculations.
-#' @param fix.eff fixed effects, comma delimited e.g. c("a","b"). Default: all columns in metadata
-#' @param ran.eff random effects, comma delimited. Default: NULL
-#' @param reference a reference level/group in each metadata, comma delimited e.g. c("meta1,ref1","meta2,ref2"). 
+#' @param fix.eff fixed effects, comma delimited e.g. c("metadata1","metadata2"). Default: all columns in metadata.
+#' @param ran.eff random effects, comma delimited. Default: NULL.
+#' @param reference a reference level/group in each metadata, comma delimited e.g. c("metadata1,ref1","metadata2,ref2"). 
 #' Default: alphabetically first phenotype/condition will be used as reference. 
 #' Note: Reference must be specified for metadata with more than 2 levels.
 #' @param output.folder the name of the output folder where all MaAsLin2 results will be written. Default: maaslin2_output
@@ -25,14 +25,14 @@
 
 
 calQval <- function(se, 
-                      mod.assn, 
-                      ptype = NULL,
-                      fix.eff = NULL, 
-                      ran.eff = NULL,
-                      reference = NULL,
-                      output.folder = NULL,
-                      ncores = 1
-                      )
+                    mod.assn, 
+                    ptype = NULL,
+                    fix.eff = NULL, 
+                    ran.eff = NULL,
+                    reference = NULL,
+                    output.folder = NULL,
+                    ncores = 1
+                    )
   {
   mod.assn <- as.data.frame(mod.assn)
   fint <- as.data.frame(assay(se))

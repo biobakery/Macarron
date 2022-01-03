@@ -1,47 +1,23 @@
-#!/usr/bin/env Rscript
+#' Create a chemical taxonomy table for annotated metabolic features.
+#' 
+#' @param feat_anno a dataframe (features x annotations) containing the available feature annotations.
+#' ^^Column 1 must contain standard annotations such as HMDB ID or PubChem CID for 
+#' the subset of identified/annotated metabolic features. 
+#' 
+#' @return dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
+#' 
+#' chem_tax <- decorateID(feat_anno)
+#' 
+#' @export
 
-###############################################################################
 
-# MACARRoN Utility: Assign chemical taxonomy to annotated compounds using HMDB ID or PubChem CID
-
-###############################################################################
-
-#load the required libraries, report an error if they are not installed
-
-for (lib in c('data.table', 'xml2', 'RJSONIO', 'RCurl')) {
-  suppressPackageStartupMessages(require(lib, character.only = TRUE))
-}
-
-args <- list()
-args$input_annotations <- NULL
-
-###############################################################################
-# Add command line arguments 
-###############################################################################
-
-options <-
-  optparse::OptionParser(usage = paste(
-    "%prog [Inputs]",
-    " <feature_annotations.csv> "
-    )
-)
-
-###############################################################################
-# Main decorateID function
-###############################################################################
-
-decorateID <- function(
-    input_annotations
-)
+decorateID <- function(feat_anno)
 {
-    # Read feature annotation file
-    if (is.character(input_annotations)) {
-      feat_anno <- read.csv(input_annotations, row.names=1)
-      } else {
-      feat_anno <- input_annotations
-    }
-
     ID_list <- unique(feat_anno[,1][feat_anno[,1] != ""])
+    
+    for (lib in c('data.table', 'xml2', 'RJSONIO', 'RCurl')) {
+      suppressPackageStartupMessages(require(lib, character.only = TRUE))
+    }
 
     # function if HMDB Accession
     ChemTax_HMDB <- function(h){
@@ -72,30 +48,12 @@ decorateID <- function(
 
     # create the final dataframe
     if(ID_list[1] %like% "HMDB"){
-        dat <- do.call(rbind, lapply(ID_list, function(x) ChemTax_HMDB(x)))
+        tax_df <- do.call(rbind, lapply(ID_list, function(x) ChemTax_HMDB(x)))
     }else{
-        dat <- do.call(rbind, lapply(ID_list, function(x) ChemTax_PubChem(x)))
+        tax_df <- do.call(rbind, lapply(ID_list, function(x) ChemTax_PubChem(x)))
     }
-    colnames(dat) <- c(names(feat_anno)[1],"Sub_Class","Class")
+    colnames(tax_df) <- c(names(feat_anno)[1],"Sub_Class","Class")
     file_name <- paste0(names(feat_anno)[1],"_taxonomy.csv")
-    write.csv(dat, file=file_name, row.names=FALSE)
-    return(dat)
-}
-if (identical(environment(), globalenv()) &&
-    !length(grep("^source\\(", sys.calls()))) {
-  # get command line options and positional arguments
-  parsed_arguments = optparse::parse_args(options, 
-                                          positional_arguments = TRUE)
-  current_args <- parsed_arguments[["options"]]
-  positional_args <- parsed_arguments[["args"]]
-  # check three positional arguments are provided
-  if (length(positional_args) < 1) {
-    optparse::print_help(options)
-    stop(
-      paste("Please provide the required",
-            "positional arguments",
-            )
-    )
-  }
-  taxonomy_table <- decorateID(positional_args[1])
+    write.csv(tax_df, file=file_name, row.names=FALSE)
+    return(tax_df)
 }

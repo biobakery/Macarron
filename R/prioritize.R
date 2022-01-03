@@ -1,6 +1,6 @@
 #' Rank metabolic features and prioritize based on predicted bioactivity.
 #' 
-#' Metabolic features are ranked based on AVA, and effect size and q-value of
+#' Metabolic features are ranked based on AVA, and q-value and effect size of
 #' differential abundance. The harmonic mean of these three ranks is calculated and used as 
 #' the meta-rank to prioritize potentially bioactive features in a phenotype (or condition). 
 #' Top-ranked features have good relative abundance, and are significantly perturbed 
@@ -59,7 +59,8 @@ prioritize <- function(se,
     message("Calculating meta-rank and prioritizing metabolic features")
     all.params$meta_rank <- harmonic.mean(t(all.params[,6:8]))
     ranked.features <- all.params[order(-all.params$meta_rank),]
-    ranked.features$priority <- seq(1:nrow(ranked.features))
+    rank.perc <- ecdf(all.params$meta_rank)
+    ranked.features$rank_percentile <- sapply(ranked.features$meta_rank, function(x) rank.perc(x))
     ranked.features <- as.data.frame(ranked.features)
   }
   prioritized.features <- as.data.frame(do.call(rbind, lapply(test.grps, prioritize.each)))
@@ -77,7 +78,7 @@ prioritize <- function(se,
   mac.result <- cbind(prioritized.features[,c("feature",
                                         "annotation1",
                                         "annotation2",
-                                        "priority",
+                                        "rank_percentile",
                                         "status",
                                         "module",
                                         "anchor",
@@ -85,15 +86,17 @@ prioritize <- function(se,
                                         "characterizable")],
                       anno[prioritized.features$feature, c(3:ncol(anno))])
   mac.result$feature <- gsub("F","",mac.result$feature)
-  colnames(mac.result) <- c("feature_index",
+  colnames(mac.result) <- c("Feature index",
                             names(anno)[1],
                             names(anno)[2],
-                            "priority",
-                            "status",
-                            "module",
-                            "anchor",
-                            "related_classes",
-                            "characterizable",
+                            "Rank percentile",
+                            "Status",
+                            "Module",
+                            "Anchor",
+                            "Related classes",
+                            "Covaries with standard",
                             names(anno)[3:ncol(anno)])
+  write.csv(mac.result, file="prioritized_metabolites_all.csv")
+  write.csv(mac.result[which(mac.result$characterizable == 1),], file="prioritized_metabolites_characterizable.csv")
   mac.result
 }
