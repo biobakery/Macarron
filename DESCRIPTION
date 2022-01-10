@@ -3,11 +3,15 @@ Type: Package
 Title: "An R package for prioritization of bioactives from epidemiological and environmental metabolomics studies"
 Year: 2021
 Version: 0.99.0
-Author: Amrisha Bhosle, Ludwig Geistlinger
-Maintainer: Amrisha Bhosle <abhosle@broadinstitute.org>
-Depends: 
-    R (>= 4.0.0), SummarizedExperiment (>= 1.10.0)
-Description: MACARRoN is a workflow for the prioritization of interesting bioactive small molecules from metabolomics experiments. Prioritization integrates strengths of evidences of bioactivity such as covariation with a standard/known metabolite, abundance relative to a known metabolite and association with an environmental or phenotypic indicator of bioactivity. Broadly, the workflow consists of stratified clustering of metabolic spectral features which co-vary in abundance in a condition, transfer of functional annotations, estimation of relative abundance and differential abundance analysis to identify associations between features and phenotype/condition.
+Authors@R: c(
+  person("Amrisha", "Bhosle", email = "abhosle@broadinstitute.org", role = "aut"), 
+  person("Ludwig", "Geistlinger", email = "Ludwig_Geistlinger@hms.harvard.edu", role = "aut"),
+  person("Sagun", "Maharjan", email = "sagunmaharjann@gmail.com", role = c("aut", "cre"))
+  )
+Author: Amrisha Bhosle<abhosle@broadinstitute.org>, 
+    Ludwig Geistlinger<Ludwig_Geistlinger@hms.harvard.edu>, 
+    Sagun Maharjan<sagunmaharjann@gmail.com>
+Maintainer: Sagun Maharjan <sagunmaharjann@gmail.com>
 Imports: 
     BiocParallel,
     DelayedArray,
@@ -20,12 +24,17 @@ Imports:
     plyr,
     psych
 Suggests: 
-    BiocStyle, 
-    knitr, 
+    knitr,
+    testthat (>= 2.1.0),
+    rmarkdown, 
     markdown
 VignetteBuilder: knitr
-
+Depends: 
+    R (>= 4.1.0), SummarizedExperiment (>= 1.10.0)
+Description: MACARRoN is a workflow for the prioritization of interesting bioactive small molecules from metabolomics experiments. Prioritization integrates strengths of evidences of bioactivity such as covariation with a standard/known metabolite, abundance relative to a known metabolite and association with an environmental or phenotypic indicator of bioactivity. Broadly, the workflow consists of stratified clustering of metabolic spectral features which co-vary in abundance in a condition, transfer of functional annotations, estimation of relative abundance and differential abundance analysis to identify associations between features and phenotype/condition.
+VignetteBuilder: knitr
 License: MIT + file LICENSE
 URL: http://huttenhower.sph.harvard.edu/macarron
 Encoding: UTF-8
-LazyData: true
+biocViews: Sequencing, Metabolomics, Coverage, FunctionalPrediction, Clustering
+BugReports: https://forum.biobakery.org/c/microbial-community-profiling/macarron

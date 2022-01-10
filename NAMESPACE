@@ -1,1 +1,14 @@
 
+export(MACARRoN)
+
+import("SummarizedExperiment")
+import("BiocParallel")
+import("DelayedArray")
+import("WGCNA")
+import("ff")
+import("ffbase")
+import("data.table")
+import("dynamicTreeCut")
+import("Maaslin2")
+import("plyr")
+import("psych")
