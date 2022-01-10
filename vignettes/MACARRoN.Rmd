@@ -1,0 +1,153 @@
+---
+title: "MACARRoN"
+date: "Monday, Jan 10, 2022"
+author:
+ - name: Amrisha Bhosle
+   email: abhosle@broadinstitute.org
+ - name: Ludwig Geistlinger
+   email: Ludwig_Geistlinger@hms.harvard.edu
+ - name: Sagun Maharjan
+   email: sagunmaharjann@gmail.com
+output: html_document
+vignette: >
+    %\VignetteIndexEntry{MACARRoN}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+## MACARRoN User Manual ##  
+  
+MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction
+  of Novel bioactives) is a workflow to systematically identify and prioritize
+  potentially bioactive (and often unannotated) small molecules in microbial 
+  community metabolomic datasets. It prioritizes metabolic features as 
+  "potentially bioactive" using a combination of covariance with standard
+  i.e. annotated compounds, ecological properties such as prevalence and 
+  relative abundance and association with environmental parameters or phenotypes.
+
+If you use the MACARRoN software, please cite our manuscript: 
+
+If you have questions, please direct it to:
+[MACARRoN Forum](https://forum.biobakery.org/c/microbial-community-profiling/macarron)
+
+---
+   
+## Contents ##
+* [Description](#description)
+* [Requirements](#requirements)
+* [Installation](#installation)
+
+
+## Description ## 
+
+MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives)
+  is a workflow to systematically identify and prioritize potentially bioactive (and often unannotated)
+  small molecules in microbial community metabolomic datasets.
+
+## Requirements ## 
+
+MACARRoN is an R package that can be run as a set of R functions or via a command line wrapper.
+
+
+## Installation ##
+
+If only running from the command line, you do not need to install the MACARRoN package but you will 
+need to install the MACARRoN dependencies.
+
+### From the command line ###
+1. Install the Bioconductor dependencies: SummarizedExperiment, BiocParallel, DelayedArray, Maaslin2 
+and ComplexHeatmap.
+2. Install the CRAN dependencies:
+    * ``$ R -q -e "install.packages(c('optparse','logging','data.table','WGCNA','ff','ffbase',
+    'dynamicTreeCut','plyr','psych','ggplot2','circlize','grDevices','xml2','RCurl','RJSONIO'), repos='http://cran.r-project.org')"``
+
+### From R ###
+
+To install the latest version of MACARRoN:
+
+``
+if(!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("MACARRoN")
+``
+
+To install the latest development version of MACARRoN:
+
+``
+install.packages("devtools")
+library("devtools")
+install_github("biobakery/MACARRoN")
+``
+
+## Run a demo ##
+
+#### In R ####
+
+```{r}
+library(MACARRoN)
+input_abundances <- system.file(
+    'extdata','demo_abundances.csv', package="MACARRoN")
+input_annotations <-system.file(
+    'extdata','demo_annotations.csv', package="MACARRoN")
+input_metadata <-system.file(
+    'extdata','demo_metadata.csv', package="MACARRoN")
+input_taxonomy <-system.file(
+    'extdata','demo_taxonomy.csv', package="MACARRoN")
+MACARRoN(input_abundances, input_annotations, input_metadata, input_taxonomy)
+```
+
+
+##### Session Info #####
+
+Session info from running the demo in R can be displayed with the following command.
+
+```{r}
+sessionInfo()
+```
+
+### Options
+```
+Usage: ./MACARRoN.R [Inputs]
+ <feature_abundances.csv>
+ <feature_annotations.csv>
+ <sample_metadata.csv>
+ <chemical_taxonomy.csv> 
+
+
+Options:
+    -h, --help
+        Show this help message and exit
+
+    -o OUTPUT, --output=OUTPUT
+        Output folder name [Default: MACARRoN_output]
+
+    -p METADATA_VARIABLE, --metadata_variable=METADATA_VARIABLE
+        Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors) [Default: Second column of metadata table]
+
+    -p MIN_PREVALENCE, --min_prevalence=MIN_PREVALENCE
+        Minimum percent of samples of each condition in <metadata variable> in which metabolic feature is recorded [Default: 0.7]
+
+    -e EXECUTION_MODE, --execution_mode=EXECUTION_MODE
+        BiocParallel Class for execution [Default: serial] [Choices:serial, multi]
+
+    -k STANDARD_IDENTIFIER, --standard_identifier=STANDARD_IDENTIFIER
+        Annotation such as HMDB/METLIN/PubChem ID for an annotated metabolite feature [Default: Second column of annotation table]
+
+    -m ANCHOR_ANNOTATION, --anchor_annotation=ANCHOR_ANNOTATION
+        Metabolite name for an annotated metabolite feature [Default: Third column of annotation table]
+
+    -c MIN_MODULE_SIZE, --min_module_size=MIN_MODULE_SIZE
+        Minimum module size for module generation [Default: NULL (will be calculated by analyzing measures of success)]
+
+    -f FIXED_EFFECTS, --fixed_effects=FIXED_EFFECTS
+        Maaslin2 parameter; Fixed effects for differential abundance linear model, comma-delimited for multiple effects [Default: all]
+
+    -r RANDOM_EFFECTS, --random_effects=RANDOM_EFFECTS
+        Maaslin2 parameter; Random effects for differential abundance linear model, comma-delimited for multiple effects [Default: none]
+
+    -d REFERENCE, --reference=REFERENCE
+        Maaslin2 parameter; The factor to use as a reference for a variable with more than two levels provided as a string of 'variable,reference' comma delimited for multiple variables [Default: Alphabetically first]
+
+    -n CORES, --cores=CORES
+        Maaslin2 parameter; The number of R processes to run in parallel [Default: 1]
+    ```
