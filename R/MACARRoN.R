@@ -48,8 +48,8 @@ options <-
     "<feature_annotations.csv>\n",
     "<sample_metadata.csv>\n",
     "<chemical_taxonomy.csv> "
-    )
-)
+  )
+  )
 options <-
   optparse::add_option(
     options,
@@ -59,8 +59,8 @@ options <-
     default = args$output,
     help = paste0("Output folder name ",
                   "[Default: %default]"
-                  )
-)
+    )
+  )
 options <- 
   optparse::add_option(
     options,
@@ -69,8 +69,8 @@ options <-
     dest = "metadata_variable",
     default = args$metadata_variable,
     help = paste("Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors)",
-            "[Default: Second column of metadata table]")
-)
+                 "[Default: Second column of metadata table]")
+  )
 options <-
   optparse::add_option(
     options,
@@ -81,8 +81,8 @@ options <-
     help = paste0("Minimum percent of samples of each condition in <metadata variable> ",
                   "in which metabolic feature is recorded ",
                   "[Default: %default]"
-                  )
-)
+    )
+  )
 options <- 
   optparse::add_option(
     options,
@@ -91,10 +91,10 @@ options <-
     dest = "execution_mode",
     default = args$execution_mode,
     help = paste0("BiocParallel Class for execution [Default: %default] [Choices:",
-            toString(execution_mode_choices),
-            "]"
-            )
-)
+                  toString(execution_mode_choices),
+                  "]"
+    )
+  )
 options <- 
   optparse::add_option(
     options,
@@ -103,8 +103,8 @@ options <-
     dest = "standard_identifier",
     default = args$standard_identifier,
     help = paste("Annotation such as HMDB/METLIN/PubChem ID for an annotated metabolite feature",
-            "[Default: Second column of annotation table]")
-)
+                 "[Default: Second column of annotation table]")
+  )
 options <- 
   optparse::add_option(
     options,
@@ -113,8 +113,8 @@ options <-
     dest = "anchor_annotation",
     default = args$anchor_annotation,
     help = paste("Metabolite name for an annotated metabolite feature",
-            "[Default: Third column of annotation table]")
-)
+                 "[Default: Third column of annotation table]")
+  )
 options <- 
   optparse::add_option(
     options,
@@ -123,8 +123,8 @@ options <-
     dest = "min_module_size",
     default = args$min_module_size,
     help = paste("Minimum module size for module generation",
-            "[Default: %default (will be calculated by analyzing measures of success)]")
-)
+                 "[Default: %default (will be calculated by analyzing measures of success)]")
+  )
 options <- 
   optparse::add_option(
     options,
@@ -133,9 +133,9 @@ options <-
     dest = "fixed_effects",
     default = args$fixed_effects,
     help = paste("Maaslin2 parameter; Fixed effects for differential abundance linear model,",
-            "comma-delimited for multiple effects",
-            "[Default: all]")
-)
+                 "comma-delimited for multiple effects",
+                 "[Default: all]")
+  )
 options <- 
   optparse::add_option(
     options,
@@ -144,34 +144,34 @@ options <-
     dest = "random_effects",
     default = args$random_effects,
     help = paste("Maaslin2 parameter; Random effects for differential abundance linear model,",
-            "comma-delimited for multiple effects",
-            "[Default: none]")
-)
+                 "comma-delimited for multiple effects",
+                 "[Default: none]")
+  )
 options <-
-    optparse::add_option(
-        options,
-        c("-d", "--reference"),
-        type = "character",
-        dest = "reference",
-        default = args$reference,
-        help = paste("Maaslin2 parameter; The factor to use as a reference for",
-            "a variable with more than two levels",
-            "provided as a string of 'variable,reference'",
-            "comma delimited for multiple variables",
-            "[Default: Alphabetically first]"
-        )
+  optparse::add_option(
+    options,
+    c("-d", "--reference"),
+    type = "character",
+    dest = "reference",
+    default = args$reference,
+    help = paste("Maaslin2 parameter; The factor to use as a reference for",
+                 "a variable with more than two levels",
+                 "provided as a string of 'variable,reference'",
+                 "comma delimited for multiple variables",
+                 "[Default: Alphabetically first]"
     )
-    options <-
-    optparse::add_option(
-        options,
-        c("-n", "--cores"),
-        type = "double",
-        dest = "cores",
-        default = args$cores,
-        help = paste("Maaslin2 parameter; The number of R processes to",
-            "run in parallel [Default: %default]"
-        )
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-n", "--cores"),
+    type = "double",
+    dest = "cores",
+    default = args$cores,
+    help = paste("Maaslin2 parameter; The number of R processes to",
+                 "run in parallel [Default: %default]"
     )
+  )
 
 
 
@@ -197,9 +197,9 @@ MACARRoN <-
     random_effects = NULL,
     reference = NULL,
     cores = 1
-    )
+  )
   {
-
+    
     # Read in the abundances, annotations, metadata and chemical classification files
     #----------------------------------------------------------------------------------
     # If a character string then this is a file name, else a data frame
@@ -207,41 +207,41 @@ MACARRoN <-
     if (is.character(input_abundances)) {
       feat_int <- data.frame(data.table::fread(input_abundances, header = TRUE, sep = ","))
       feat_int <- feat_int[,-1]
-      } else {
+    } else {
       feat_int <- input_abundances
     }
-
+    
     # Feature annotations
     if (is.character(input_annotations)) {
       feat_anno <- data.frame(data.table::fread(input_annotations, header = TRUE, sep = ","))
       feat_anno <- feat_anno[,-1]
-      } else {
+    } else {
       feat_anno <- input_annotations
     }
-
+    
     # Sample metadata
     if (is.character(input_metadata)) {
       exp_meta <- data.frame(data.table::fread(input_metadata, header = TRUE, sep = ","))
-      } else {
+    } else {
       exp_meta <- input_metadata
     }
-
+    
     # Chemical classification
     if (is.character(input_taxonomy)) {
       chem_tax <- data.frame(data.table::fread(input_taxonomy, header = TRUE, sep = ","))
-      } else {
+    } else {
       chem_tax <- input_taxonomy
     } 
     
-  
+    
     # Create the output folder
     #----------------------------------------------------------------------------------
     if (!file.exists(output)) {
       logging::loginfo("Creating output folder.")
       dir.create(output)
     }  
-
-   
+    
+    
     # Create log file
     #----------------------------------------------------------------------------------
     log_file <- file.path(output, "MACARRoN.log")
@@ -252,9 +252,9 @@ MACARRoN <-
     }
     logging::basicConfig(level = 'FINEST')
     logging::addHandler(logging::writeToFile, 
-      file = log_file, level = "DEBUG")
+                        file = log_file, level = "DEBUG")
     logging::setLevel(20, logging::getHandler('basic.stdout'))
-
+    
     # Logging arguments
     #----------------------------------------------------------------------------------
     logging::loginfo("Writing function arguments to log file")
@@ -284,9 +284,9 @@ MACARRoN <-
     logging::logdebug("Random effects: %s", random_effects)
     logging::logdebug("Reference condition/level: %s", reference)
     logging::logdebug("Cores: %d", cores)
-
-
-
+    
+    
+    
     # Create Summarized Experiment object
     #----------------------------------------------------------------------------------
     # Create metabolic feature IDs: F[#]
@@ -294,7 +294,7 @@ MACARRoN <-
     # Assign newly created feature IDs as rownames for intensity and annotation tables.
     rownames(feat_int) <- ids
     rownames(feat_anno) <- ids
-  
+    
     # Match sample IDs between metadata (exp_meta) and abundance data (feat_int).
     # Removes samples that do not have features/metadata.
     rownames(exp_meta) <- exp_meta[,1]
@@ -302,26 +302,26 @@ MACARRoN <-
     exp_meta[exp_meta == ""] <- NA
     feat_int <- feat_int[,intersect(names(feat_int),rownames(exp_meta))]
     exp_meta <- exp_meta[intersect(names(feat_int),rownames(exp_meta)),]
-
+    
     logging::loginfo("Samples with both metabolic features and metadata: %d", nrow(exp_meta))
     logging::loginfo("Total number of metabolic features: %d", nrow(feat_int))
-
+    
     #Summarized Experiment object
     se <- SummarizedExperiment::SummarizedExperiment(assays = feat_int,
                                                      colData = exp_meta,
                                                      rowData = feat_anno)
     logging::loginfo("Summarized Experiment created.") 
-
-
+    
+    
     # Filtering features based on prevalence (default = 0.7)
     #----------------------------------------------------------------------------------
-    for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff', 'ffbase')) {
+    for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff')) {
       suppressPackageStartupMessages(require(lib, character.only = TRUE))
     }
-
+    
     # Abundance matrix
     mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
-
+    
     # Phenotype i.e. groups/conditions
     if(is.null(metadata_variable)){
       ptype <- names(colData(se))[1]
@@ -331,7 +331,7 @@ MACARRoN <-
       logging::loginfo("Metadata chosen for prevalence filtering: %s", ptype)
     }
     grps <- unique(se[[ptype]])
-
+    
     # Function: Get features that satisfy prevalence threshold in each condition
     .getIds <- function(g){
       ind <- se[[ptype]] == g  
@@ -339,61 +339,61 @@ MACARRoN <-
       ind <- rowMeans(is.na(smat)) <= 1 - min_prevalence
       ind
     }
-
-
+    
+    
     # Apply on all groups/conditions
     ind <- vapply(grps, .getIds, logical(nrow(mat)))
-
+    
     # Union of features
     ind <- apply(ind,1,any)
     mat <- mat[ind,]
-
+    
     logging::loginfo("Metabolic features that passed prevalence threshold: %d", nrow(mat))
-
-
+    
+    
     #================================================================================== 
     # Assigning prevalent metabolic features to covariance modules
     #==================================================================================
     message("Initiating module assignments")
-
+    
     # Create bicor-based distance matrix
     #----------------------------------------------------------------------------------
     
     # Compute correlation and distance matrices
     if(nrow(mat) <= 25000){
       .getCorMat <- function(g)
-    {
-      inx <- se[[ptype]] == g
-      gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=min_prevalence),inx]
-      tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
-      rownames(tmp) <- rownames(mat)
-      colnames(tmp) <- colnames(gmat)
-      tmp <- DelayedArray::DelayedArray(tmp)
-      tmp[rownames(gmat), colnames(gmat)] <- gmat
-      tmp <- log2(tmp)
-      options(warn=-1)
-      cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
-      options(warn=0)
-      cmat[is.na(cmat)] <- 0
-      cmat[cmat < 0] <- 0
-      cmat <- as(cmat, "dsyMatrix")
-      cmat
-    }
-    
-    if(execution_mode == "serial"){
-      exe.choice <- BiocParallel::SerialParam()
-    }else if(execution_mode == "multi"){
-      exe.choice <- BiocParallel::MultiParam()
-    }
-
-    # Apply on all groups/conditions
-    cmats <- BiocParallel::bplapply(grps, .getCorMat, BPPARAM = exe.choice)
-  
-    # Keep the best observed positive correlation for each pair of features
-    mmat <- do.call(pmax, c(cmats, na.rm=TRUE))
+      {
+        inx <- se[[ptype]] == g
+        gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=min_prevalence),inx]
+        tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
+        rownames(tmp) <- rownames(mat)
+        colnames(tmp) <- colnames(gmat)
+        tmp <- DelayedArray::DelayedArray(tmp)
+        tmp[rownames(gmat), colnames(gmat)] <- gmat
+        tmp <- log2(tmp)
+        options(warn=-1)
+        cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
+        options(warn=0)
+        cmat[is.na(cmat)] <- 0
+        cmat[cmat < 0] <- 0
+        cmat <- as(cmat, "dsyMatrix")
+        cmat
+      }
+      
+      if(execution_mode == "serial"){
+        exe.choice <- BiocParallel::SerialParam()
+      }else if(execution_mode == "multi"){
+        exe.choice <- BiocParallel::MultiParam()
+      }
+      
+      # Apply on all groups/conditions
+      cmats <- BiocParallel::bplapply(grps, .getCorMat, BPPARAM = exe.choice)
+      
+      # Keep the best observed positive correlation for each pair of features
+      mmat <- do.call(pmax, c(cmats, na.rm=TRUE))
     }
     else
-    # Large datasets
+      # Large datasets
     {for (g in grps)
     {
       inx <- se[[ptype]] == g
@@ -414,54 +414,54 @@ MACARRoN <-
       message(paste0(g,"_ff created"))
       rm(cmat)
     }
-
-    # Keep the best observed positive correlation for each pair of features
-    mmat <- matrix(0, nrow=nrow(mat), ncol=nrow(mat))
-    for(j in ls(pattern="_ff")){
-      for(k in 1:nrow(mmat)){
-        mmat[,k] <- pmax(mmat[,k],get(j)[,k],na.rm=TRUE)
+      
+      # Keep the best observed positive correlation for each pair of features
+      mmat <- matrix(0, nrow=nrow(mat), ncol=nrow(mat))
+      for(j in ls(pattern="_ff")){
+        for(k in 1:nrow(mmat)){
+          mmat[,k] <- pmax(mmat[,k],get(j)[,k],na.rm=TRUE)
+        }
       }
-    }
-    rownames(mmat) <- rownames(mat)
-    colnames(mmat) <- rownames(mat)
+      rownames(mmat) <- rownames(mat)
+      colnames(mmat) <- rownames(mat)
     } 
     # Beta scaling to ensure power law distribution
     mmat = mmat^3
     # Distance matrix
     w = 1 - mmat
     logging::loginfo(paste0("Distance matrix with ",nrow(w)," metabolic features created."))
-
-
+    
+    
     # Tree construction
     #----------------------------------------------------------------------------------
     for (lib in c('dynamicTreeCut')) {
       suppressPackageStartupMessages(require(lib, character.only = TRUE))
     }
-
+    
     # Construct tree 
     tree <- hclust(as.dist(w), method="average")
     logging::loginfo("Tree constructed.")
-
+    
     # Setting the minimum module size
     if(is.null(min_module_size)){
       mms = round((nrow(w))^(1/3))
-      }else{
-        mms = as.numeric(as.character(min_module_size))
+    }else{
+      mms = as.numeric(as.character(min_module_size))
     }
     logging::loginfo("Minimum module size used for this dataset: %d", mms)
-
+    
     
     anno <- as.data.frame(rowData(se))
     if(is.null(standard_identifier)){
       mod.assn <- as.data.frame(anno[colnames(w),1])
     }else{
       mod.assn <- as.data.frame(anno[colnames(w),standard_identifier])
-      }
+    }
     rownames(mod.assn) <- colnames(w)
-
-
+    
+    
     # Evaluating Measures of Success
-
+    
     # Range of mms for measures of success
     mms.list <- c(mms - 10, mms - 5, mms, mms + 5, mms + 10)
     mms.list <- mms.list[which(mms.list > 1)]
@@ -552,7 +552,7 @@ MACARRoN <-
       perc.feats <- round((nrow(mod.assn[which(mod.assn[,2] %in% homogeneous.mods),])*100)/nrow(mod.assn),2)
       fham <- rbind(fham, perc.feats)
     }  
-
+    
     # Writing results to file
     mac.mos <- data.frame(cbind(mms.list, totc, sing, pann, hscc, maxc, perc, maxs, pers, fham))
     rownames(mac.mos) <- NULL
@@ -566,34 +566,34 @@ MACARRoN <-
                            "Max subclasses per module",
                            "90p subclasses per module",
                            "% Features in HAM")
-                      
+    
     file_name <- "MAC_modules_Measures_of_success.csv"
     file_loc = file.path(output, file_name)
     logging::loginfo(paste0("Writing measures of success to file: ",file_loc))
     write.csv(mac.mos, file=file_loc, row.names=FALSE)
-
+    
     # Module assignments
-
-
+    
+    
     mod.assn[,2] <- as.vector(dynamicTreeCut::cutreeDynamic(dendro = tree, 
-                                                          distM = as.matrix(w), 
-                                                          deepSplit = TRUE, 
-                                                          pamRespectsDendro = TRUE,
-                                                          minClusterSize = mms))
-
+                                                            distM = as.matrix(w), 
+                                                            deepSplit = TRUE, 
+                                                            pamRespectsDendro = TRUE,
+                                                            minClusterSize = mms))
+    
     if(is.null(standard_identifier)){
       colnames(mod.assn) <- c(names(anno)[1],"module")
     }else{
       colnames(mod.assn) <- c(standard_identifier,"module")
     }
-
+    
     logging::loginfo("Total number of modules: %d", max(mod.assn[,2]))
-  
+    
     ann.mod <- unique(mod.assn[which(mod.assn[,1] != ""),2])
     ann.mod <- ann.mod[which(ann.mod > 0)]
     ann.mod <- as.data.frame(ann.mod)
     colnames(ann.mod) <- "module"
-
+    
     # Annotate modules with chemical composition information based on annotated features
     assignChemTax <- function(m){
       if(m > 0){
@@ -609,9 +609,9 @@ MACARRoN <-
     mod.assn[mod.assn == "character(0)"] <- ""
     mod.assn$classes <- gsub(",",";",mod.assn$classes)
     mod.assn <- as.data.frame(mod.assn)
-
-
-
+    
+    
+    
     #================================================================================== 
     # Abundance versus anchor (AVA) calculation
     #==================================================================================   
@@ -619,8 +619,8 @@ MACARRoN <-
     fint <- as.data.frame(assay(se))
     fint <- fint[rownames(mod.assn),]
     fint <- t(fint)
-
-     # Setting the metadata
+    
+    # Setting the metadata
     if(is.null(ptype)){
       ptype <- names(colData(se))[1]
       logging::loginfo("Metadata chosen for AVA calculation: %s", ptype)
@@ -629,11 +629,11 @@ MACARRoN <-
       logging::loginfo("Metadata chosen for AVA calculation: %s", ptype)
     }
     grps <- unique(se[[ptype]])
-  
+    
     # Identification of the anchor in each module
     anchors <- NULL
     modules <- sort(unique(mod.assn$module))
-  
+    
     # Function for anchor and the reference phenotype
     find.anchor <- function(m){
       message(paste0("Finding anchor feature for module: ",m))
@@ -644,20 +644,20 @@ MACARRoN <-
         # all features in the module
         r <- rownames(mod.assn[which(mod.assn$module == m),])
       }
-    
-    # Mean abundances in phenotypes
-    means <- NULL
-    for (g in grps){
-      ind <- se[[ptype]] == g
-      if(length(r) > 1){
-        gmean <- apply(fint[ind,r],2,function(x) mean(x, na.rm = TRUE))
-        d <- data.frame(m, g, max(gmean), stringsAsFactors = FALSE)
-        colnames(d) <- c("module","grp","mma")
-      }else{
-        d <- data.frame(m, g, mean(fint[ind,r], na.rm = TRUE), stringsAsFactors = FALSE)
-        colnames(d) <- c("module","grp","mma")
-      }
-      means <- rbind(means,d)
+      
+      # Mean abundances in phenotypes
+      means <- NULL
+      for (g in grps){
+        ind <- se[[ptype]] == g
+        if(length(r) > 1){
+          gmean <- apply(fint[ind,r],2,function(x) mean(x, na.rm = TRUE))
+          d <- data.frame(m, g, max(gmean), stringsAsFactors = FALSE)
+          colnames(d) <- c("module","grp","mma")
+        }else{
+          d <- data.frame(m, g, mean(fint[ind,r], na.rm = TRUE), stringsAsFactors = FALSE)
+          colnames(d) <- c("module","grp","mma")
+        }
+        means <- rbind(means,d)
       }
       tail(means[order(means[3]),],1)
     }
@@ -665,15 +665,15 @@ MACARRoN <-
     mod.assn$feature <- rownames(mod.assn)
     anchors <- as.data.frame(merge(mod.assn, f.list, by = "module"))
     rownames(anchors) <- anchors$feature
-  
+    
     # Abundance versus anchor
     # singletons
     sing.ava <- rep(1, length(anchors[which(anchors$module == 0),1]))
     sing.ava <- as.data.frame(sing.ava)
     rownames(sing.ava) <- rownames(anchors[which(anchors$module == 0),])
     colnames(sing.ava) <- "ava"
-
-  
+    
+    
     # module members
     cal.ava <- function(i){
       message(paste0("Calculating AVA for feature: ",i))
@@ -689,14 +689,14 @@ MACARRoN <-
     memb.ava <- as.data.frame(do.call(rbind, lapply(members, cal.ava)))
     rownames(memb.ava) <- members
     colnames(memb.ava) <- "ava"
-  
+    
     # Combining
     ava <- as.data.frame(rbind(sing.ava, memb.ava))
     ava$module <- mod.assn[row.names(ava),"module"]
     ava <- ava[rownames(mod.assn),]
     ava <- ava[,c(2,1)]
     ava$ava <- round(ava$ava, 6)
-  
+    
     # Assign anchors
     anno <- as.data.frame(rowData(se))
     if(is.null(anchor_annotation)){
@@ -704,29 +704,29 @@ MACARRoN <-
     }else{
       anchor.anno <- anchor_annotation
     }
-  
+    
     ann.mod <- unique(mod.assn[which(mod.assn[,1] != ""),2])
     ann.mod <- ann.mod[which(ann.mod > 0)]
     ann.mod <- as.data.frame(ann.mod)
     colnames(ann.mod) <- "module"
-  
+    
     assignAnchor <- function(m){
-        anchor.feature <- rownames(ava[which(ava$module == m & ava$ava == 1),])
-        anchor.name <- as.character(anno[anchor.feature, anchor.anno])
-      }
+      anchor.feature <- rownames(ava[which(ava$module == m & ava$ava == 1),])
+      anchor.name <- as.character(anno[anchor.feature, anchor.anno])
+    }
     ann.mod$anchor <- as.character(sapply(ann.mod$module, function(m) assignAnchor(m)))
     ann.mod[ann.mod == "character(0)"] <- ""
     ava$anchor <- as.character(sapply(ava$module, function(m) ann.mod[which(ann.mod$module == m),2]))
     ava[ava == "character(0)"] <- ""
     mac.ava <- as.data.frame(ava)
-
-
+    
+    
     #================================================================================== 
     # Calculating q-value of differential abundance with MaAsLin2
     #================================================================================== 
     message("Initiating q-value calculations with MaAsLin2")
-
-    for (lib in c('Maaslin2','plyr')) {
+    
+    for (lib in c('Maaslin2','plyr','stats')) {
       suppressPackageStartupMessages(require(lib, character.only = TRUE))
     }
     # getting input data and metadata for MaAsLin2
@@ -735,36 +735,36 @@ MACARRoN <-
     fint[is.na(fint)] <- 0
     fint <- log2(fint + 1)
     meta <- as.data.frame(colData(se))
-
+    
     folder_name <- file.path(output, "Maaslin2_results")
     logging::logdebug(paste0("Writing MaAsLin2 results to folder: ",folder_name))
-
+    
     # Linear model for q-value with MaAsLin2
     #----------------------------------------------------------------------------------   
     fit.data <- Maaslin2(input_data = fint, 
-                       input_metadata = meta, 
-                       output = folder_name, 
-                       fixed_effects = fixed_effects, 
-                       random_effects = random_effects,
-                       reference = reference,
-                       normalization = "NONE",
-                       transform = "NONE",
-                       min_prevalence = 0,
-                       min_abundance = 0,
-                       min_variance = 0,
-                       cores = cores,
-                       plot_heatmap = FALSE,
-                       plot_scatter = FALSE)
-
+                         input_metadata = meta, 
+                         output = folder_name, 
+                         fixed_effects = fixed_effects, 
+                         random_effects = random_effects,
+                         reference = reference,
+                         normalization = "NONE",
+                         transform = "NONE",
+                         min_prevalence = 0,
+                         min_abundance = 0,
+                         min_variance = 0,
+                         cores = cores,
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE)
+    
     results_dat <- as.data.frame(fit.data$results[which(fit.data$results$metadata == ptype),
-                              c("feature","metadata","value","coef","pval")])  
+                                                  c("feature","metadata","value","coef","pval")])  
     adjusted_dat <- ddply(results_dat, .(metadata,value), 
-                              transform, qvalue=as.numeric(p.adjust(as.numeric(pval), "BH")))
+                          transform, qvalue=as.numeric(p.adjust(as.numeric(pval), "BH")))
     rm(results_dat)                          
     mac.qval <- adjusted_dat[,c("feature","metadata","value","qvalue")]
     mac.qval                            
-
-
+    
+    
     #================================================================================== 
     # Calculating effect size of differential abundance
     #================================================================================== 
@@ -778,11 +778,11 @@ MACARRoN <-
     fint[is.na(fint)] <- 0
     fint <- log2(fint + 1)
     fint <- t(fint)
-  
+    
     # Get phenotype from mac.qval
     ptype <- unique(mac.qval$metadata)
     grps <- unique(se[[ptype]])
-  
+    
     # Mean abundance of feature in each group of ptype
     get.mean <- function(g){
       logging::logdebug(paste0("Calculating mean abundances in phenotype: ",g))
@@ -791,7 +791,7 @@ MACARRoN <-
     }
     all.means <- as.data.frame(do.call(cbind, lapply(grps, get.mean)))
     colnames(all.means) <- grps
-  
+    
     # Effect size
     test.grps <- unique(mac.qval$value)
     ref.grp <- setdiff(grps, test.grps)
@@ -803,7 +803,7 @@ MACARRoN <-
     colnames(mac.es) <- test.grps
     rownames(mac.es) <- colnames(fint)
     mac.es
-
+    
     #================================================================================== 
     # Integrating ranks and prioritizing bioactives in each non-control condition
     #================================================================================== 
@@ -811,7 +811,7 @@ MACARRoN <-
       suppressPackageStartupMessages(require(lib, character.only = TRUE))
     }
     message("Initiating prioritization")
-
+    
     # Case conditions
     case.grps <- unique(mac.qval$value)
     
@@ -820,31 +820,31 @@ MACARRoN <-
       sub.qval <- mac.qval[which(mac.qval$value == p),]
       rownames(sub.qval) <- sub.qval$feature
       all.params <- as.data.frame(cbind(rownames(mac.ava),
-                                      mac.ava[,"ava"],
-                                      sub.qval[rownames(mac.ava),"qvalue"],
-                                      mac.es[rownames(mac.ava),p]))
+                                        mac.ava[,"ava"],
+                                        sub.qval[rownames(mac.ava),"qvalue"],
+                                        mac.es[rownames(mac.ava),p]))
       colnames(all.params) <- c("feature","ava","qval","es")
-    
-    
+      
+      
       all.params$es <- as.numeric(as.character(all.params$es))
       all.params$ava <- as.numeric(as.character(all.params$ava))
       all.params$qval <- as.numeric(as.character(all.params$qval))
-    
+      
       # Assigning direction of perturbation
       all.params$status <- ""
       all.params[which(all.params$es < 0),"status"] <- paste0("depleted in ", p)
       all.params[which(all.params$es > 0),"status"] <- paste0("enriched in ", p)
       all.params$es <- abs(all.params$es)
-    
+      
       # Ranks
       message("Assigning ranks")
       all.params$ava_rank <- rank(all.params$ava)
       all.params$qval_rank <- rank(-all.params$qval)
       all.params$es_rank <- rank(all.params$es)
-    
+      
       # Meta-rank
       message("Calculating meta-rank and prioritizing metabolic features")
-      all.params$meta_rank <- harmonic.mean(t(all.params[,6:8]))
+      all.params$meta_rank <- psych::harmonic.mean(t(all.params[,6:8]))
       ranked.features <- all.params[order(-all.params$meta_rank),]
       rank.perc <- ecdf(all.params$meta_rank)
       ranked.features$rank_percentile <- sapply(ranked.features$meta_rank, function(x) rank.perc(x))
@@ -859,35 +859,43 @@ MACARRoN <-
     anno <- as.data.frame(rowData(se))
     prioritized.features$annotation1 <- anno[prioritized.features$feature, 1]
     prioritized.features$annotation2 <- anno[prioritized.features$feature, 2]
-
+    prioritized.features$ava <- round(prioritized.features$ava, 4)
+    prioritized.features$es <- round(prioritized.features$es, 4)
+    prioritized.features$rank_percentile <- round(prioritized.features$rank_percentile, 4)
     # Final table of results
     mac.result <- cbind(prioritized.features[,c("feature",
-                                        "annotation1",
-                                        "annotation2",
-                                        "rank_percentile",
-                                        "status",
-                                        "module",
-                                        "anchor",
-                                        "module_composition",
-                                        "characterizable")],
-                      anno[prioritized.features$feature, c(3:ncol(anno))])
+                                                "annotation1",
+                                                "annotation2",
+                                                "rank_percentile",
+                                                "status",
+                                                "module",
+                                                "anchor",
+                                                "module_composition",
+                                                "characterizable",
+                                                "ava",
+                                                "qval",
+                                                "es")],
+                        anno[prioritized.features$feature, c(3:ncol(anno))])
     mac.result$feature <- gsub("F","",mac.result$feature)
     colnames(mac.result) <- c("Feature index",
-                            names(anno)[1],
-                            names(anno)[2],
-                            "Rank percentile",
-                            "Status",
-                            "Module",
-                            "Anchor",
-                            "Related classes",
-                            "Covaries with standard",
-                            names(anno)[3:ncol(anno)])
-
+                              names(anno)[1],
+                              names(anno)[2],
+                              "Rank percentile",
+                              "Status",
+                              "Module",
+                              "Anchor",
+                              "Related classes",
+                              "Covaries with standard",
+                              "AVA",
+                              "qvalue",
+                              "effect size",
+                              names(anno)[3:ncol(anno)])
+    
     file_name <- "prioritized_metabolites_all.csv"
     file_loc = file.path(output, file_name)
     logging::loginfo(paste0("Writing all prioritized metabolites to file: ",file_loc))
     write.csv(mac.result, file=file_loc, row.names=FALSE)
-
+    
     file_name <- "prioritized_metabolites_characterizable.csv"
     file_loc = file.path(output, file_name)
     logging::loginfo(paste0("Writing characterizable prioritized metabolites to file: ",file_loc))
@@ -908,24 +916,24 @@ if (identical(environment(), globalenv()) &&
     optparse::print_help(options)
     stop(
       paste("Please provide the required",
-            "positional arguments",
-            )
+            "positional arguments"
+      )
     )
   }
   se <- MACARRoN(positional_args[1],
-               positional_args[2],
-               positional_args[3],
-               positional_args[4],
-               current_args$output,
-               current_args$metadata_variable,
-               current_args$min_prevalence,
-               current_args$execution_mode,
-               current_args$standard_identifier,
-               current_args$anchor_annotation,
-               current_args$min_module_size,
-               current_args$fixed_effects,
-               current_args$random_effects,
-               current_args$reference,
-               current_args$cores
-               )     
+                 positional_args[2],
+                 positional_args[3],
+                 positional_args[4],
+                 current_args$output,
+                 current_args$metadata_variable,
+                 current_args$min_prevalence,
+                 current_args$execution_mode,
+                 current_args$standard_identifier,
+                 current_args$anchor_annotation,
+                 current_args$min_module_size,
+                 current_args$fixed_effects,
+                 current_args$random_effects,
+                 current_args$reference,
+                 current_args$cores
+  )     
 }

@@ -28,7 +28,6 @@ Suggests:
     testthat (>= 2.1.0),
     rmarkdown, 
     markdown
-VignetteBuilder: knitr
 Depends: 
     R (>= 4.1.0), SummarizedExperiment (>= 1.10.0)
 Description: MACARRoN is a workflow for the prioritization of interesting bioactive small molecules from metabolomics experiments. Prioritization integrates strengths of evidences of bioactivity such as covariation with a standard/known metabolite, abundance relative to a known metabolite and association with an environmental or phenotypic indicator of bioactivity. Broadly, the workflow consists of stratified clustering of metabolic spectral features which co-vary in abundance in a condition, transfer of functional annotations, estimation of relative abundance and differential abundance analysis to identify associations between features and phenotype/condition.
