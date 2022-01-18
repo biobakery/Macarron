@@ -10,11 +10,14 @@
 #' Default is cube root of number of prevalent features.
 #' @param evaluateMOS examine measure of success for modules identified using mms, mms + 5, mms + 10, mms - 5, mms - 10
 #' 
+#' @return mod.assn metabolic features clustered into "modules" based on covarying abundances
 #' 
 #' @examples 
 #' mod.assn <- findMacMod(se, w, chem_tax)
 #' 
-#' @return mod.assn metabolic features clustered into "modules" based on covarying abundances
+#' @importFrom dynamicTreeCut cutreeDynamic
+#' 
+#' @export
 
 findMacMod <- function(se, 
                         w, 
@@ -24,9 +27,7 @@ findMacMod <- function(se,
                         evaluateMOS = TRUE)
 {
   # packages
-  for (lib in c('dynamicTreeCut')) {
-    suppressPackageStartupMessages(require(lib, character.only = TRUE))
-  }
+  requireNamespace("dynamicTreeCut", quietly = TRUE)
   
   # Construct tree 
   tree <- hclust(as.dist(w), method="average")
@@ -40,7 +41,7 @@ findMacMod <- function(se,
   }
   
   # Module assignments
-  anno <- as.data.frame(rowData(se))
+  anno <- as.data.frame(SummarizedExperiment::rowData(se))
   if(is.null(annot)){
     mod.assn <- as.data.frame(anno[colnames(w),1])
   }else{

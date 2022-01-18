@@ -16,6 +16,11 @@
 #' se <- makeSumExp(feat_int, feat_anno, exp_meta)
 #' w <- makeDisMat(se)
 #' 
+#' @import WGCNA
+#' @import DelayedArray
+#' @import BiocParallel
+#' @import ff
+#' 
 #' @export
 
 makeDisMat <- function(se, 
@@ -28,15 +33,15 @@ makeDisMat <- function(se,
   opt.mem <- optimize.for == "memory"
   
   # packages
-  for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff', 'ffbase')) {
-    suppressPackageStartupMessages(require(lib, character.only = TRUE))
+  for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff')) {
+    requireNamespace(lib, quietly = TRUE)
   }
   # Abundance matrix
   mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
   
   # Phenotype i.e. groups/conditions
   if(is.null(ptype)){
-    ptype <- names(colData(se))[1]
+    ptype <- names(SummarizedExperiment::colData(se))[1]
     message(paste0("Metadata chosen for prevalence filtering: ",ptype))
   }else{
     ptype <- ptype
@@ -112,7 +117,7 @@ makeDisMat <- function(se,
         cmat[is.na(cmat)] <- 0
         cmat[cmat < 0] <- 0
         message(paste0(g," cmat created"))
-        assign(paste0(g,"_ff"),as.ff(cmat))
+        assign(paste0(g,"_ff"),ff::as.ff(cmat))
         message(paste0(g,"_ff created"))
         rm(cmat)
        }

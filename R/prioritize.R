@@ -16,6 +16,11 @@
 #' 
 #' @examples 
 #' mac.result <- prioritize(se, mod.assn, mac.ava, mac.qval, mac.es)
+#' 
+#' @importFrom psych harmonic.mean
+#' 
+#' 
+#' @export
 
 prioritize <- function(se,
                        mod.assn,
@@ -23,7 +28,7 @@ prioritize <- function(se,
                        mac.qval,
                        mac.es){
   # packages
-  suppressPackageStartupMessages(require("psych", character.only = TRUE))
+  requireNamespace("psych", quietly = TRUE)
   
   # Test phenotypes
   test.grps <- unique(mac.qval$value)
@@ -57,7 +62,7 @@ prioritize <- function(se,
     
     # Meta-rank
     message("Calculating meta-rank and prioritizing metabolic features")
-    all.params$meta_rank <- harmonic.mean(t(all.params[,6:8]))
+    all.params$meta_rank <- psych::harmonic.mean(t(all.params[,6:8]))
     ranked.features <- all.params[order(-all.params$meta_rank),]
     rank.perc <- ecdf(all.params$meta_rank)
     ranked.features$rank_percentile <- sapply(ranked.features$meta_rank, function(x) rank.perc(x))

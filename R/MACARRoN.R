@@ -1,16 +1,20 @@
 #!/usr/bin/env Rscript
 
+
 ###############################################################################
 
 # MACARRoN
 
 ###############################################################################
 
+#' @import logging
+#' @import optparse
+
 
 #load the required libraries, report an error if they are not installed
 
 for (lib in c('optparse', 'logging', 'data.table', 'SummarizedExperiment')) {
-  suppressPackageStartupMessages(require(lib, character.only = TRUE))
+  requireNamespace(lib, quietly = TRUE)
 }
 
 ###############################################################################
@@ -175,7 +179,7 @@ options <-
 
 
 
-
+#' @export
 ###############################################################################
 # Main MACARRoN function (defaults same command line) 
 ###############################################################################
@@ -316,7 +320,7 @@ MACARRoN <-
     # Filtering features based on prevalence (default = 0.7)
     #----------------------------------------------------------------------------------
     for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff')) {
-      suppressPackageStartupMessages(require(lib, character.only = TRUE))
+      requireNamespace(lib, quietly = TRUE)
     }
     
     # Abundance matrix
@@ -324,7 +328,7 @@ MACARRoN <-
     
     # Phenotype i.e. groups/conditions
     if(is.null(metadata_variable)){
-      ptype <- names(colData(se))[1]
+      ptype <- names(SummarizedExperiment::colData(se))[1]
       logging::loginfo("Metadata chosen for prevalence filtering: %s", ptype)
     }else{
       ptype <- metadata_variable
@@ -410,7 +414,7 @@ MACARRoN <-
       cmat[is.na(cmat)] <- 0
       mat[cmat < 0] <- 0
       message(paste0(g," cmat created"))
-      assign(paste0(g,"_ff"),as.ff(cmat))
+      assign(paste0(g,"_ff"),ff::as.ff(cmat))
       message(paste0(g,"_ff created"))
       rm(cmat)
     }
@@ -434,9 +438,7 @@ MACARRoN <-
     
     # Tree construction
     #----------------------------------------------------------------------------------
-    for (lib in c('dynamicTreeCut')) {
-      suppressPackageStartupMessages(require(lib, character.only = TRUE))
-    }
+    requireNamespace('dynamicTreeCut', quietly = TRUE)
     
     # Construct tree 
     tree <- hclust(as.dist(w), method="average")
@@ -573,8 +575,6 @@ MACARRoN <-
     write.csv(mac.mos, file=file_loc, row.names=FALSE)
     
     # Module assignments
-    
-    
     mod.assn[,2] <- as.vector(dynamicTreeCut::cutreeDynamic(dendro = tree, 
                                                             distM = as.matrix(w), 
                                                             deepSplit = TRUE, 
@@ -616,13 +616,13 @@ MACARRoN <-
     # Abundance versus anchor (AVA) calculation
     #==================================================================================   
     message("Initiating AVA calculations")
-    fint <- as.data.frame(assay(se))
+    fint <- as.data.frame(SummarizedExperiment::assay(se))
     fint <- fint[rownames(mod.assn),]
     fint <- t(fint)
     
     # Setting the metadata
     if(is.null(ptype)){
-      ptype <- names(colData(se))[1]
+      ptype <- names(SummarizedExperiment::colData(se))[1]
       logging::loginfo("Metadata chosen for AVA calculation: %s", ptype)
     }else{
       ptype = ptype
@@ -698,7 +698,7 @@ MACARRoN <-
     ava$ava <- round(ava$ava, 6)
     
     # Assign anchors
-    anno <- as.data.frame(rowData(se))
+    anno <- as.data.frame(SummarizedExperiment::rowData(se))
     if(is.null(anchor_annotation)){
       anchor.anno <- colnames(anno)[2]
     }else{
@@ -727,21 +727,21 @@ MACARRoN <-
     message("Initiating q-value calculations with MaAsLin2")
     
     for (lib in c('Maaslin2','plyr','stats')) {
-      suppressPackageStartupMessages(require(lib, character.only = TRUE))
+      requireNamespace(lib, quietly = TRUE)
     }
     # getting input data and metadata for MaAsLin2
-    fint <- as.data.frame(assay(se))
+    fint <- as.data.frame(SummarizedExperiment::assay(se))
     fint <- fint[rownames(mod.assn),]
     fint[is.na(fint)] <- 0
     fint <- log2(fint + 1)
-    meta <- as.data.frame(colData(se))
+    meta <- as.data.frame(SummarizedExperiment::colData(se))
     
     folder_name <- file.path(output, "Maaslin2_results")
     logging::logdebug(paste0("Writing MaAsLin2 results to folder: ",folder_name))
     
     # Linear model for q-value with MaAsLin2
     #----------------------------------------------------------------------------------   
-    fit.data <- Maaslin2(input_data = fint, 
+    fit.data <- Maaslin2::Maaslin2(input_data = fint, 
                          input_metadata = meta, 
                          output = folder_name, 
                          fixed_effects = fixed_effects, 
@@ -758,8 +758,8 @@ MACARRoN <-
     
     results_dat <- as.data.frame(fit.data$results[which(fit.data$results$metadata == ptype),
                                                   c("feature","metadata","value","coef","pval")])  
-    adjusted_dat <- ddply(results_dat, .(metadata,value), 
-                          transform, qvalue=as.numeric(p.adjust(as.numeric(pval), "BH")))
+    adjusted_dat <- plyr::ddply(results_dat, .(metadata,value), 
+                          transform, qvalue=as.numeric(stats::p.adjust(as.numeric(pval), "BH")))
     rm(results_dat)                          
     mac.qval <- adjusted_dat[,c("feature","metadata","value","qvalue")]
     mac.qval                            
@@ -773,7 +773,7 @@ MACARRoN <-
     
     # calculating mean abundance in each condition
     # Abundance matrix
-    fint <- as.data.frame(assay(se))
+    fint <- as.data.frame(SummarizedExperiment::assay(se))
     fint <- fint[unique(mac.qval$feature),]
     fint[is.na(fint)] <- 0
     fint <- log2(fint + 1)
@@ -807,9 +807,7 @@ MACARRoN <-
     #================================================================================== 
     # Integrating ranks and prioritizing bioactives in each non-control condition
     #================================================================================== 
-    for (lib in c('psych')) {
-      suppressPackageStartupMessages(require(lib, character.only = TRUE))
-    }
+    requireNamespace('psych', quietly = TRUE)
     message("Initiating prioritization")
     
     # Case conditions
@@ -856,7 +854,7 @@ MACARRoN <-
     prioritized.features$module_composition <- mod.assn[prioritized.features$feature,"classes"]
     prioritized.features$characterizable <- 0
     prioritized.features[which(prioritized.features$anchor != ""),"characterizable"] <- "1"
-    anno <- as.data.frame(rowData(se))
+    anno <- as.data.frame(SummarizedExperiment::rowData(se))
     prioritized.features$annotation1 <- anno[prioritized.features$feature, 1]
     prioritized.features$annotation2 <- anno[prioritized.features$feature, 2]
     prioritized.features$ava <- round(prioritized.features$ava, 4)

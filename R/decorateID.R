@@ -8,6 +8,12 @@
 #' 
 #' chem_tax <- decorateID(feat_anno)
 #' 
+#' 
+#' @importFrom data.table %like%
+#' @importFrom xml2 read_xml xml_text xml_find_all
+#' @importFrom RJSONIO fromJSON
+#' @importFrom RCurl url.exists getURL
+#' 
 #' @export
 
 
@@ -16,17 +22,17 @@ decorateID <- function(feat_anno)
     ID_list <- unique(feat_anno[,1][feat_anno[,1] != ""])
     
     for (lib in c('data.table', 'xml2', 'RJSONIO', 'RCurl')) {
-      suppressPackageStartupMessages(require(lib, character.only = TRUE))
+      requireNamespace(lib, quietly = TRUE)
     }
 
     # function if HMDB Accession
     ChemTax_HMDB <- function(h){
         hmdb_url <- paste0("https://hmdb.ca/metabolites/",h,".xml")
         Sys.sleep(0.1)
-        if(url.exists(hmdb_url)){
-          hmdb_page <- read_xml(hmdb_url) 
-          node_class <- xml_text(xml_find_all(hmdb_page, "//class"))
-          node_subclass <- xml_text(xml_find_all(hmdb_page, "//sub_class"))
+        if(RCurl::url.exists(hmdb_url)){
+          hmdb_page <- xml2::read_xml(hmdb_url) 
+          node_class <- xml2::xml_text(xml2::xml_find_all(hmdb_page, "//class"))
+          node_subclass <- xml2::xml_text(xml2::xml_find_all(hmdb_page, "//sub_class"))
           cbind(h, node_subclass, node_class)
         }
     }
@@ -38,8 +44,8 @@ decorateID <- function(feat_anno)
         inchi_key <- gsub('.{1}$','',inchi_txt)
         classy_url <- paste0("http://classyfire.wishartlab.com/entities/",inchi_key,".json")
         Sys.sleep(0.1)
-        if(url.exists(classy_url)){
-          classy_page <- fromJSON(classy_url)
+        if(RCurl::url.exists(classy_url)){
+          classy_page <- RJSONIO::fromJSON(classy_url)
           node_class <- as.character(classy_page[['class']][1])
           node_subclass <- as.character(classy_page[['subclass']][1])
           cbind(p, node_subclass, node_class)
@@ -53,6 +59,7 @@ decorateID <- function(feat_anno)
         tax_df <- do.call(rbind, lapply(ID_list, function(x) ChemTax_PubChem(x)))
     }
     colnames(tax_df) <- c(names(feat_anno)[1],"Sub_Class","Class")
+    tax_df <- as.data.frame(tax_df)
     file_name <- paste0(names(feat_anno)[1],"_taxonomy.csv")
     write.csv(tax_df, file=file_name, row.names=FALSE)
     return(tax_df)

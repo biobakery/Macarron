@@ -23,13 +23,13 @@ calAVA <- function(se,
                    anchor.anno = NULL)
   {
   mod.assn <- as.data.frame(mod.assn)
-  fint <- as.data.frame(assay(se))
+  fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[rownames(mod.assn),]
   fint <- t(fint)
   
   # Setting the metadata
   if(is.null(ptype)){
-    ptype <- names(colData(se))[1]
+    ptype <- names(SummarizedExperiment::colData(se))[1]
     message(paste0("Metadata chosen for AVA calculation: ",ptype))
   }else{
     ptype = ptype

@@ -11,12 +11,13 @@
 #' @examples 
 #' mac.es <- calES(se, mac.qval)
 #' 
+#' @export
 
 calES <- function(se,
                   mac.qval)
 {
   # Abundance matrix
-  fint <- as.data.frame(assay(se))
+  fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[unique(mac.qval$feature),]
   fint[is.na(fint)] <- 0
   fint <- log2(fint + 1)
