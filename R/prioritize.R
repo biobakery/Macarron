@@ -72,18 +72,23 @@ prioritize <- function(se,
   anno <- as.data.frame(rowData(se))
   prioritized.features$annotation1 <- anno[prioritized.features$feature, 1]
   prioritized.features$annotation2 <- anno[prioritized.features$feature, 2]
-  
+  prioritized.features$ava <- round(prioritized.features$ava, 4)
+  prioritized.features$es <- round(prioritized.features$es, 4)
+  prioritized.features$rank_percentile <- round(prioritized.features$rank_percentile, 4)
   
   # Final table of results
   mac.result <- cbind(prioritized.features[,c("feature",
-                                        "annotation1",
-                                        "annotation2",
-                                        "rank_percentile",
-                                        "status",
-                                        "module",
-                                        "anchor",
-                                        "module_composition",
-                                        "characterizable")],
+                                              "annotation1",
+                                              "annotation2",
+                                              "rank_percentile",
+                                              "status",
+                                              "module",
+                                              "anchor",
+                                              "module_composition",
+                                              "characterizable",
+                                              "ava",
+                                              "qval",
+                                              "es")],
                       anno[prioritized.features$feature, c(3:ncol(anno))])
   mac.result$feature <- gsub("F","",mac.result$feature)
   colnames(mac.result) <- c("Feature index",
@@ -95,6 +100,9 @@ prioritize <- function(se,
                             "Anchor",
                             "Related classes",
                             "Covaries with standard",
+                            "AVA",
+                            "qvalue",
+                            "effect size",
                             names(anno)[3:ncol(anno)])
   write.csv(mac.result, file="prioritized_metabolites_all.csv")
   write.csv(mac.result[which(mac.result$characterizable == 1),], file="prioritized_metabolites_characterizable.csv")
