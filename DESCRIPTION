@@ -27,7 +27,9 @@ Imports:
     psych,
     xml2,
     RCurl,
-    RJSONIO
+    RJSONIO,
+    logging,
+    optparse
 Suggests: 
     knitr,
     testthat (>= 2.1.0),
