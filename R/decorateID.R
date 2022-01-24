@@ -9,7 +9,7 @@
 #' chem_tax <- decorateID(feat_anno)
 #' 
 #' 
-#' @importFrom data.table %like%
+#' @import data.table
 #' @importFrom xml2 read_xml xml_text xml_find_all
 #' @importFrom RJSONIO fromJSON
 #' @importFrom RCurl url.exists getURL

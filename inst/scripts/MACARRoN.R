@@ -1,39 +1,188 @@
-#' MACARRoN
-#' 
-#' @param input_abundances a comma-delimited file or dataframe (features x samples) containing metabolic feature intensities (abundances).
-#' @param input_annotations a comma-delimited file or dataframe (features x annotations) containing available feature annotations.
-#' @param input_metadata a comma-delimited file or dataframe (samples x metadata) containing sample metadata.
-#' @param input_taxonomy a comma-delimited file or dataframe containing the chemical class and subclass information of annotated features.
-#' @param output name of the folder where MACARRoN output files will be written. Default: "MACARRoN_output".
-#' @param metadata_variable the header of the column in the metadata file that identifies the main phenotypes/conditions in the study. Default: Column 2 of metadata file.
-#' @param min_prevalence prevalence threshold (percentage). Default = 0.7.
-#' @param execution_mode BiocParallel execution mode. Options: "serial" or "multi" Default = "serial".
-#' @param standard_identifier HMDB ID or PubChem CID. Default: Column 2 of annotation file/Column 1 of annotation dataframe.
-#' @param anchor_annotation Metabolite name. Default: Column 3 of annotation file/Column 2 of annotation dataframe.
-#' @param min_module_size Integer that defines the size of the smallest covariance module. Default: Cube root of number of prevalent metabolic features. 
-#' @param fixed_effects Covariates for linear modeling with MaAsLin2. Default: All columns of metadata dataframe.
-#' @param random_effects Random effects for linear modeling with MaAsLin2. Default: NULL.
-#' @param reference Reference category (factor) in categorical metadata covariates containing three or more levels. Must be provided as a string of 'covariate,reference' semi-colon delimited for multiple covariates.
-#' @param cores MaAsLin2 parameter-The number of R processes to be run in parallel.
-#' 
-#' @return data.frame containing metabolic features listed according to their priority (potential bioactivity) in a phenotype of interest.
-#' 
-#' @import SummarizedExperiment
-#' @import logging
-#' @import data.table
-#' @import WGCNA
-#' @import DelayedArray
-#' @import BiocParallel
-#' @import ff
-#' @importFrom dynamicTreeCut cutreeDynamic
-#' @import Maaslin2
-#' @importFrom plyr ddply
-#' @importFrom stats p.adjust
-#' @importFrom psych harmonic.mean
-#' 
-#' 
-#' @export 
+#!/usr/bin/env Rscript
 
+
+###############################################################################
+
+# MACARRoN
+
+###############################################################################
+
+#' @import logging
+#' @import optparse
+
+
+#load the required libraries, report an error if they are not installed
+
+for (lib in c('optparse', 'logging', 'data.table', 'SummarizedExperiment')) {
+  requireNamespace(lib, quietly = TRUE)
+}
+
+###############################################################################
+# Set the default options
+###############################################################################
+
+execution_mode_choices <- c("serial", "multi")
+
+args <- list()
+args$input_abundances <- NULL
+args$input_annotations <- NULL
+args$input_metadata <- NULL
+args$input_taxonomy <- NULL
+args$output <- "MACARRoN_output"
+args$metadata_variable <- NULL
+args$min_prevalence <- 0.7
+args$execution_mode <- execution_mode_choices[1]
+args$standard_identifier <- NULL
+args$anchor_annotation <- NULL
+args$min_module_size <- NULL
+args$fixed_effects <- NULL
+args$random_effects <- NULL
+args$reference <- NULL
+args$cores <- 1
+
+
+###############################################################################
+# Add command line arguments 
+###############################################################################
+
+options <-
+  optparse::OptionParser(usage = paste(
+    "%prog [Inputs]\n",
+    "<feature_abundances.csv>\n",
+    "<feature_annotations.csv>\n",
+    "<sample_metadata.csv>\n",
+    "<chemical_taxonomy.csv> "
+  )
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-o", "--output"),
+    type = "character",
+    dest = "output",
+    default = args$output,
+    help = paste0("Output folder name ",
+                  "[Default: %default]"
+    )
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-p", "--metadata_variable"),
+    type = "character",
+    dest = "metadata_variable",
+    default = args$metadata_variable,
+    help = paste("Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors)",
+                 "[Default: Second column of metadata table]")
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-p", "--min_prevalence"),
+    type = "double",
+    dest = "min_prevalence",
+    default = args$min_prevalence,
+    help = paste0("Minimum percent of samples of each condition in <metadata variable> ",
+                  "in which metabolic feature is recorded ",
+                  "[Default: %default]"
+    )
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-e", "--execution_mode"),
+    type = "character",
+    dest = "execution_mode",
+    default = args$execution_mode,
+    help = paste0("BiocParallel Class for execution [Default: %default] [Choices:",
+                  toString(execution_mode_choices),
+                  "]"
+    )
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-k", "--standard_identifier"),
+    type = "character",
+    dest = "standard_identifier",
+    default = args$standard_identifier,
+    help = paste("Annotation such as HMDB/METLIN/PubChem ID for an annotated metabolite feature",
+                 "[Default: Second column of annotation table]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-m", "--anchor_annotation"),
+    type = "character",
+    dest = "anchor_annotation",
+    default = args$anchor_annotation,
+    help = paste("Metabolite name for an annotated metabolite feature",
+                 "[Default: Third column of annotation table]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-c", "--min_module_size"),
+    type = "character",
+    dest = "min_module_size",
+    default = args$min_module_size,
+    help = paste("Minimum module size for module generation",
+                 "[Default: %default (will be calculated by analyzing measures of success)]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-f", "--fixed_effects"),
+    type = "character",
+    dest = "fixed_effects",
+    default = args$fixed_effects,
+    help = paste("Maaslin2 parameter; Fixed effects for differential abundance linear model,",
+                 "comma-delimited for multiple effects",
+                 "[Default: all]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-r", "--random_effects"),
+    type = "character",
+    dest = "random_effects",
+    default = args$random_effects,
+    help = paste("Maaslin2 parameter; Random effects for differential abundance linear model,",
+                 "comma-delimited for multiple effects",
+                 "[Default: none]")
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-d", "--reference"),
+    type = "character",
+    dest = "reference",
+    default = args$reference,
+    help = paste("Maaslin2 parameter; The factor to use as a reference for",
+                 "a variable with more than two levels",
+                 "provided as a string of 'variable,reference'",
+                 "comma delimited for multiple variables",
+                 "[Default: Alphabetically first]"
+    )
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-n", "--cores"),
+    type = "double",
+    dest = "cores",
+    default = args$cores,
+    help = paste("Maaslin2 parameter; The number of R processes to",
+                 "run in parallel [Default: %default]"
+    )
+  )
+
+
+
+#' @export
+###############################################################################
+# Main MACARRoN function (defaults same command line) 
+###############################################################################
 
 MACARRoN <- 
   function(
@@ -751,3 +900,38 @@ MACARRoN <-
     write.csv(mac.result[which(mac.result[,9] == 1),], file=file_loc, row.names=FALSE)
     mac.result                                                                                                                                                                                                
   }
+
+
+if (identical(environment(), globalenv()) &&
+    !length(grep("^source\\(", sys.calls()))) {
+  # get command line options and positional arguments
+  parsed_arguments = optparse::parse_args(options, 
+                                          positional_arguments = TRUE)
+  current_args <- parsed_arguments[["options"]]
+  positional_args <- parsed_arguments[["args"]]
+  # check three positional arguments are provided
+  if (length(positional_args) != 4) {
+    optparse::print_help(options)
+    stop(
+      paste("Please provide the required",
+            "positional arguments"
+      )
+    )
+  }
+  se <- MACARRoN(positional_args[1],
+                 positional_args[2],
+                 positional_args[3],
+                 positional_args[4],
+                 current_args$output,
+                 current_args$metadata_variable,
+                 current_args$min_prevalence,
+                 current_args$execution_mode,
+                 current_args$standard_identifier,
+                 current_args$anchor_annotation,
+                 current_args$min_module_size,
+                 current_args$fixed_effects,
+                 current_args$random_effects,
+                 current_args$reference,
+                 current_args$cores
+  )     
+}

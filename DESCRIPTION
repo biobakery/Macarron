@@ -28,10 +28,10 @@ Imports:
     xml2,
     RCurl,
     RJSONIO,
-    logging,
-    optparse
+    logging
 Suggests: 
     knitr,
+    optparse,
     testthat (>= 2.1.0),
     rmarkdown, 
     markdown
