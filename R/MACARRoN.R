@@ -304,7 +304,7 @@ MACARRoN <-
     logging::loginfo("Minimum module size used for this dataset: %d", mms)
     
     
-    anno <- as.data.frame(rowData(se))
+    anno <- as.data.frame(SummarizedExperiment::rowData(se))
     if(is.null(standard_identifier)){
       mod.assn <- as.data.frame(anno[colnames(w),1])
     }else{
@@ -608,7 +608,7 @@ MACARRoN <-
                          plot_scatter = FALSE)
     
     results_dat <- as.data.frame(fit.data$results[which(fit.data$results$metadata == ptype),
-                                                  c("feature","metadata","value","coef","pval")])  
+                                                  c("feature","metadata","value","coef","pval")]) 
     adjusted_dat <- plyr::ddply(results_dat, .(metadata,value), 
                           transform, qvalue=as.numeric(stats::p.adjust(as.numeric(pval), "BH")))
     rm(results_dat)                          

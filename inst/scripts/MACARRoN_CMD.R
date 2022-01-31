@@ -1,0 +1,206 @@
+#!/usr/bin/env Rscript
+
+
+###############################################################################
+
+# MACARRoN Command Line 
+
+###############################################################################
+
+###############################################################################
+# Set the default options
+###############################################################################
+
+execution_mode_choices <- c("serial", "multi")
+
+args <- list()
+args$input_abundances <- NULL
+args$input_annotations <- NULL
+args$input_metadata <- NULL
+args$input_taxonomy <- NULL
+args$output <- "MACARRoN_output"
+args$metadata_variable <- NULL
+args$min_prevalence <- 0.7
+args$execution_mode <- execution_mode_choices[1]
+args$standard_identifier <- NULL
+args$anchor_annotation <- NULL
+args$min_module_size <- NULL
+args$fixed_effects <- NULL
+args$random_effects <- NULL
+args$reference <- NULL
+args$cores <- 1
+
+
+###############################################################################
+# Add command line arguments 
+###############################################################################
+library(optparse)
+options <-
+  optparse::OptionParser(usage = paste(
+    "%prog [Inputs]\n",
+    "<feature_abundances.csv>\n",
+    "<feature_annotations.csv>\n",
+    "<sample_metadata.csv>\n",
+    "<chemical_taxonomy.csv> "
+  )
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-o", "--output"),
+    type = "character",
+    dest = "output",
+    default = args$output,
+    help = paste0("Output folder name ",
+                  "[Default: %default]"
+    )
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-p", "--metadata_variable"),
+    type = "character",
+    dest = "metadata_variable",
+    default = args$metadata_variable,
+    help = paste("Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors)",
+                 "[Default: Second column of metadata table]")
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-p", "--min_prevalence"),
+    type = "double",
+    dest = "min_prevalence",
+    default = args$min_prevalence,
+    help = paste0("Minimum percent of samples of each condition in <metadata variable> ",
+                  "in which metabolic feature is recorded ",
+                  "[Default: %default]"
+    )
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-e", "--execution_mode"),
+    type = "character",
+    dest = "execution_mode",
+    default = args$execution_mode,
+    help = paste0("BiocParallel Class for execution [Default: %default] [Choices:",
+                  toString(execution_mode_choices),
+                  "]"
+    )
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-k", "--standard_identifier"),
+    type = "character",
+    dest = "standard_identifier",
+    default = args$standard_identifier,
+    help = paste("Annotation such as HMDB/METLIN/PubChem ID for an annotated metabolite feature",
+                 "[Default: Second column of annotation table]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-m", "--anchor_annotation"),
+    type = "character",
+    dest = "anchor_annotation",
+    default = args$anchor_annotation,
+    help = paste("Metabolite name for an annotated metabolite feature",
+                 "[Default: Third column of annotation table]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-c", "--min_module_size"),
+    type = "character",
+    dest = "min_module_size",
+    default = args$min_module_size,
+    help = paste("Minimum module size for module generation",
+                 "[Default: %default (will be calculated by analyzing measures of success)]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-f", "--fixed_effects"),
+    type = "character",
+    dest = "fixed_effects",
+    default = args$fixed_effects,
+    help = paste("Maaslin2 parameter; Fixed effects for differential abundance linear model,",
+                 "comma-delimited for multiple effects",
+                 "[Default: all]")
+  )
+options <- 
+  optparse::add_option(
+    options,
+    c("-r", "--random_effects"),
+    type = "character",
+    dest = "random_effects",
+    default = args$random_effects,
+    help = paste("Maaslin2 parameter; Random effects for differential abundance linear model,",
+                 "comma-delimited for multiple effects",
+                 "[Default: none]")
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-d", "--reference"),
+    type = "character",
+    dest = "reference",
+    default = args$reference,
+    help = paste("Maaslin2 parameter; The factor to use as a reference for",
+                 "a variable with more than two levels",
+                 "provided as a string of 'variable,reference'",
+                 "comma delimited for multiple variables",
+                 "[Default: Alphabetically first]"
+    )
+  )
+options <-
+  optparse::add_option(
+    options,
+    c("-n", "--cores"),
+    type = "double",
+    dest = "cores",
+    default = args$cores,
+    help = paste("Maaslin2 parameter; The number of R processes to",
+                 "run in parallel [Default: %default]"
+    )
+  )
+
+
+if (identical(environment(), globalenv()) &&
+    !length(grep("^source\\(", sys.calls()))) {
+  
+  # get command line options and positional arguments
+  parsed_arguments = optparse::parse_args(options, 
+                                          positional_arguments = TRUE)
+  current_args <- parsed_arguments[["options"]]
+  positional_args <- parsed_arguments[["args"]]
+  
+  # check if four positional arguments are provided
+  if (length(positional_args) != 4) {
+    optparse::print_help(options)
+    stop(
+      paste("Please provide the required",
+            "positional arguments"
+      )
+    )
+  }
+
+library(Macarron)    
+prioritized_metabolites <- MACARRoN(positional_args[1],
+                                    positional_args[2],
+                                    positional_args[3],
+                                    positional_args[4],
+                                    current_args$output,
+                                    current_args$metadata_variable,
+                                    current_args$min_prevalence,
+                                    current_args$execution_mode,
+                                    current_args$standard_identifier,
+                                    current_args$anchor_annotation,
+                                    current_args$min_module_size,
+                                    current_args$fixed_effects,
+                                    current_args$random_effects,
+                                    current_args$reference,
+                                    current_args$cores)     
+}
