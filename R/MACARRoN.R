@@ -263,7 +263,7 @@ MACARRoN <-
       cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
       options(warn=0)
       cmat[is.na(cmat)] <- 0
-      mat[cmat < 0] <- 0
+      cmat[cmat < 0] <- 0
       message(paste0(g," cmat created"))
       assign(paste0(g,"_ff"),ff::as.ff(cmat))
       message(paste0(g,"_ff created"))
