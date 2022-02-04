@@ -44,7 +44,6 @@ makeSumExp <- function(feat_int,feat_anno,exp_meta)
   message(paste0("Samples with both abundances and metadata: ",nrow(exp_meta)))
   
   #Make SE object
-  requireNamespace('SummarizedExperiment', quietly = TRUE)
   se <- SummarizedExperiment::SummarizedExperiment(assays = feat_int,
                                                    colData = exp_meta,
                                                    rowData = feat_anno)

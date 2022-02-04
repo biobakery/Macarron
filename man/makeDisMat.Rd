@@ -20,7 +20,9 @@ makeDisMat(
 \item{preval}{prevalence threshold (percentage). Default = 0.7.}
 
 \item{execution_mode}{serial or multi processing with BiocParallel. Default: "serial" (recommended for laptops). 
-"multi" may be used when running MACARRoN on a cluster. 
+"multi" may be used when running MACARRoN on a cluster.}
+
+\item{optimize.for}{TODO
 
 Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
 e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in at least 70% of A samples
@@ -36,5 +38,6 @@ Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix.
 \examples{
 se <- makeSumExp(feat_int, feat_anno, exp_meta)
 w <- makeDisMat(se)
+
 
 }

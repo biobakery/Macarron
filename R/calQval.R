@@ -21,9 +21,6 @@
 #' @examples
 #' mac.qval <- calQval(se, mod.assn, ptype, fix.eff, ran.eff, reference, output.folder)
 #' 
-#' @import Maaslin2
-#' @importFrom plyr ddply
-#' @importFrom stats p.adjust
 #' 
 #' @export
 
@@ -46,10 +43,7 @@ calQval <- function(se,
   meta <- as.data.frame(colData(se))
   
   # q-value estimation with Maaslin2
-  for (lib in c('Maaslin2','plyr','stats')) {
-    requireNamespace(lib, quietly = TRUE)
-  }
-  
+ 
   # Default output folder
   if(is.null(output.folder)){
     output.folder = "maaslin2_output"
@@ -80,7 +74,7 @@ calQval <- function(se,
   }
   qval <- as.data.frame(fit.data$results[which(fit.data$results$metadata == ptype),
                                               c("feature","metadata","value","coef","pval")])
-  mac.qval <- plyr::ddply(qval, .(metadata,value), 
+  mac.qval <- plyr::ddply(qval, plyr::.(metadata,value), 
                      transform, qvalue=as.numeric(stats::p.adjust(as.numeric(pval), "BH")))
   mac.qval <- mac.qval[,c("feature","metadata","value","qvalue")]
   mac.qval

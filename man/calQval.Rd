@@ -47,4 +47,5 @@ ptype and ref (reference group) should be the same as the one specified for effe
 \examples{
 mac.qval <- calQval(se, mod.assn, ptype, fix.eff, ran.eff, reference, output.folder)
 
+
 }

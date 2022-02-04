@@ -9,10 +9,6 @@
 #' chem_tax <- decorateID(feat_anno)
 #' 
 #' 
-#' @import data.table
-#' @importFrom xml2 read_xml xml_text xml_find_all
-#' @importFrom RJSONIO fromJSON
-#' @importFrom RCurl url.exists getURL
 #' 
 #' @export
 
@@ -21,10 +17,6 @@ decorateID <- function(feat_anno)
 {
     ID_list <- unique(feat_anno[,1][feat_anno[,1] != ""])
     
-    for (lib in c('data.table', 'xml2', 'RJSONIO', 'RCurl')) {
-      requireNamespace(lib, quietly = TRUE)
-    }
-
     # function if HMDB Accession
     ChemTax_HMDB <- function(h){
         hmdb_url <- paste0("https://hmdb.ca/metabolites/",h,".xml")

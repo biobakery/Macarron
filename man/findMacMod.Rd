@@ -38,4 +38,5 @@ Cluster metabolic features based on covarying abundances into modules
 \examples{
 mod.assn <- findMacMod(se, w, chem_tax)
 
+
 }

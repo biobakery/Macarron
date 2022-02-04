@@ -5,6 +5,7 @@
 #' @param preval prevalence threshold (percentage). Default = 0.7.
 #' @param execution_mode serial or multi processing with BiocParallel. Default: "serial" (recommended for laptops). 
 #' "multi" may be used when running MACARRoN on a cluster. 
+#' @param optimize.for TODO
 #' 
 #' Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
 #' e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in at least 70% of A samples
@@ -16,10 +17,6 @@
 #' se <- makeSumExp(feat_int, feat_anno, exp_meta)
 #' w <- makeDisMat(se)
 #' 
-#' @import WGCNA
-#' @import DelayedArray
-#' @import BiocParallel
-#' @import ff
 #' 
 #' @export
 
@@ -32,10 +29,6 @@ makeDisMat <- function(se,
   optimize.for <- match.arg(optimize.for)
   opt.mem <- optimize.for == "memory"
   
-  # packages
-  for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff')) {
-    requireNamespace(lib, quietly = TRUE)
-  }
   # Abundance matrix
   mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
   
@@ -54,7 +47,7 @@ makeDisMat <- function(se,
   {
     ind <- se[[ptype]] == g
     smat <- mat[,ind]
-    ind <- rowMeans(is.na(smat)) <= 1 - preval
+    ind <- DelayedArray::rowMeans(is.na(smat)) <= 1 - preval
     ind
   }
   
@@ -73,7 +66,8 @@ makeDisMat <- function(se,
     {
       message(g)
       inx <- se[[ptype]] == g
-      gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=preval),inx]
+      ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=preval
+      gmat <- mat[ind,inx]
       tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
       rownames(tmp) <- rownames(mat)
       colnames(tmp) <- colnames(gmat)
@@ -92,7 +86,7 @@ makeDisMat <- function(se,
     if(execution_mode == "serial"){
       exe.choice <- BiocParallel::SerialParam()
     }else if(execution_mode == "multi"){
-      exe.choice <- BiocParallel::MultiParam()
+      exe.choice <- BiocParallel::MulticoreParam()
     }
     
     # Apply on all groups/conditions
@@ -104,7 +98,8 @@ makeDisMat <- function(se,
       for (g in grps){
         message(g)
         inx <- se[[ptype]] == g
-        gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=preval),inx]
+        ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=preval
+        gmat <- mat[ind,inx]
         tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
         rownames(tmp) <- rownames(mat)
         colnames(tmp) <- colnames(gmat)

@@ -17,8 +17,6 @@
 #' @examples 
 #' mac.result <- prioritize(se, mod.assn, mac.ava, mac.qval, mac.es)
 #' 
-#' @importFrom psych harmonic.mean
-#' 
 #' 
 #' @export
 
@@ -26,9 +24,8 @@ prioritize <- function(se,
                        mod.assn,
                        mac.ava,
                        mac.qval,
-                       mac.es){
-  # packages
-  requireNamespace("psych", quietly = TRUE)
+                       mac.es)
+{
   
   # Test phenotypes
   test.grps <- unique(mac.qval$value)

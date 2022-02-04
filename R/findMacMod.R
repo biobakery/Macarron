@@ -15,7 +15,6 @@
 #' @examples 
 #' mod.assn <- findMacMod(se, w, chem_tax)
 #' 
-#' @importFrom dynamicTreeCut cutreeDynamic
 #' 
 #' @export
 
@@ -26,9 +25,6 @@ findMacMod <- function(se,
                         mms = NULL,
                         evaluateMOS = TRUE)
 {
-  # packages
-  requireNamespace("dynamicTreeCut", quietly = TRUE)
-  
   # Construct tree 
   tree <- hclust(as.dist(w), method="average")
   message("Tree constructed")

@@ -19,17 +19,6 @@
 #' @return data.frame containing metabolic features listed according to their priority (potential bioactivity) in a phenotype of interest.
 #' 
 #' @import SummarizedExperiment
-#' @import logging
-#' @import data.table
-#' @import WGCNA
-#' @import DelayedArray
-#' @import BiocParallel
-#' @import ff
-#' @importFrom dynamicTreeCut cutreeDynamic
-#' @import Maaslin2
-#' @importFrom plyr ddply
-#' @importFrom stats p.adjust
-#' @importFrom psych harmonic.mean
 #' 
 #' 
 #' @export 
@@ -170,10 +159,6 @@ MACARRoN <-
     
     # Filtering features based on prevalence (default = 0.7)
     #----------------------------------------------------------------------------------
-    for (lib in c('WGCNA', 'DelayedArray', 'BiocParallel', 'ff')) {
-      requireNamespace(lib, quietly = TRUE)
-    }
-    
     # Abundance matrix
     mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
     
@@ -191,7 +176,7 @@ MACARRoN <-
     .getIds <- function(g){
       ind <- se[[ptype]] == g  
       smat <- mat[,ind]
-      ind <- rowMeans(is.na(smat)) <= 1 - min_prevalence
+      ind <- DelayedArray::rowMeans(is.na(smat)) <= 1 - min_prevalence
       ind
     }
     
@@ -219,7 +204,8 @@ MACARRoN <-
       .getCorMat <- function(g)
       {
         inx <- se[[ptype]] == g
-        gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=min_prevalence),inx]
+        ind <- DelayedArray::rowMeans(!is.na(mat[,inx])) >= min_prevalence
+        gmat <- mat[ind,inx]
         tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
         rownames(tmp) <- rownames(mat)
         colnames(tmp) <- colnames(gmat)
@@ -238,7 +224,7 @@ MACARRoN <-
       if(execution_mode == "serial"){
         exe.choice <- BiocParallel::SerialParam()
       }else if(execution_mode == "multi"){
-        exe.choice <- BiocParallel::MultiParam()
+        exe.choice <- BiocParallel::MulticoreParam()
       }
       
       # Apply on all groups/conditions
@@ -252,7 +238,8 @@ MACARRoN <-
     {for (g in grps)
     {
       inx <- se[[ptype]] == g
-      gmat <- mat[which(rowMeans(!is.na(mat[,inx]))>=min_prevalence),inx]
+      ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=min_prevalence
+      gmat <- mat[ind,inx]
       tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
       rownames(tmp) <- rownames(mat)
       colnames(tmp) <- colnames(gmat)
@@ -289,8 +276,6 @@ MACARRoN <-
     
     # Tree construction
     #----------------------------------------------------------------------------------
-    requireNamespace('dynamicTreeCut', quietly = TRUE)
-    
     # Construct tree 
     tree <- hclust(as.dist(w), method="average")
     logging::loginfo("Tree constructed.")
@@ -577,9 +562,6 @@ MACARRoN <-
     #================================================================================== 
     message("Initiating q-value calculations with MaAsLin2")
     
-    for (lib in c('Maaslin2','plyr','stats')) {
-      requireNamespace(lib, quietly = TRUE)
-    }
     # getting input data and metadata for MaAsLin2
     fint <- as.data.frame(SummarizedExperiment::assay(se))
     fint <- fint[rownames(mod.assn),]
@@ -609,7 +591,7 @@ MACARRoN <-
     
     results_dat <- as.data.frame(fit.data$results[which(fit.data$results$metadata == ptype),
                                                   c("feature","metadata","value","coef","pval")]) 
-    adjusted_dat <- plyr::ddply(results_dat, .(metadata,value), 
+    adjusted_dat <- plyr::ddply(results_dat, plyr::.(metadata,value), 
                           transform, qvalue=as.numeric(stats::p.adjust(as.numeric(pval), "BH")))
     rm(results_dat)                          
     mac.qval <- adjusted_dat[,c("feature","metadata","value","qvalue")]
@@ -658,7 +640,6 @@ MACARRoN <-
     #================================================================================== 
     # Integrating ranks and prioritizing bioactives in each non-control condition
     #================================================================================== 
-    requireNamespace('psych', quietly = TRUE)
     message("Initiating prioritization")
     
     # Case conditions

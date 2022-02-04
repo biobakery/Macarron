@@ -30,4 +30,5 @@ in the specified environment/phenotype.
 \examples{
 mac.result <- prioritize(se, mod.assn, mac.ava, mac.qval, mac.es)
 
+
 }

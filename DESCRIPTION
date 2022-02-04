@@ -1,19 +1,15 @@
 Package: MACARRoN
-Type: Package
-Title: "An R package for prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics studies"
-Year: 2021
 Version: 0.99.0
+Title: An R package for prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics studies
 Authors@R: c(
   person("Amrisha", "Bhosle", email = "abhosle@broadinstitute.org", role = "aut"), 
   person("Ludwig", "Geistlinger", email = "Ludwig_Geistlinger@hms.harvard.edu", role = "aut"),
   person("Sagun", "Maharjan", email = "sagunmaharjann@gmail.com", role = c("aut", "cre"))
   )
-Author: Amrisha Bhosle<abhosle@broadinstitute.org>, 
-    Ludwig Geistlinger<Ludwig_Geistlinger@hms.harvard.edu>, 
-    Sagun Maharjan<sagunmaharjann@gmail.com>
 Maintainer: Sagun Maharjan <sagunmaharjann@gmail.com>
 Depends: 
-    R (>= 4.0.0), SummarizedExperiment (>= 1.10.0)
+    R (>= 4.1), 
+    SummarizedExperiment
 Imports: 
     BiocParallel,
     DelayedArray,
