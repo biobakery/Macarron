@@ -1,2 +1,2 @@
 library(testthat)
-library(MACARRoN)
+library(Macarron)

@@ -59,3 +59,14 @@ data.frame containing metabolic features listed according to their priority (pot
 \description{
 MACARRoN
 }
+\examples{
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+mets.prioritized <- Macarron::MACARRoN(input_abundances = prism_abundances,
+                                       input_annotations = prism_annotations,
+                                       input_metadata = prism_metadata,
+                                       input_taxonomy = met_taxonomy)
+
+}

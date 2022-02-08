@@ -4,20 +4,20 @@
 \alias{calAVA}
 \title{Calculate abundance versus anchor (AVA) of metabolic features.}
 \usage{
-calAVA(se, mod.assn, ptype = NULL, anchor.anno = NULL)
+calAVA(se, mod.assn, metadata_variable = NULL, anchor_annotation = NULL)
 }
 \arguments{
 \item{se}{SummarizedExperiment object created using MACARRoN::makeSumExp().}
 
 \item{mod.assn}{the output of MACARRoN::findMacMod().}
 
-\item{ptype}{metadata of interest. Default: Column 2 of metadata table.}
+\item{metadata_variable}{metadata of interest. Default: Column 2 of metadata table.}
 
-\item{anchor.anno}{anchor identification. Default: column 2 of annotation dataframe.
-Note: ptype must be consistent across ava, q-value and effect-size calculations.}
+\item{anchor_annotation}{anchor identification. Default: column 2 of annotation dataframe.
+Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.}
 }
 \value{
-mac.ava
+mac.ava abundance versus anchor values of metabolic features
 }
 \description{
 AVA of a feature is the ratio of its abundance and the most abundant metabolite in the same module 
@@ -26,6 +26,22 @@ feature. For every feature, mean abundance in each phenotype or condition is cal
 for AVA calculation. Singletons are assigned an AVA of 1.
 }
 \examples{
-mac.ava <- calAVA(mbx, mod.assn)
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+abundances_df = read.csv(file = prism_abundances, row.names = 1)
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+metadata_df = read.csv(file = prism_metadata)
+met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+taxonomy_df = read.csv(file = met_taxonomy)
+mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+                            input_annotations = annotations_df,
+                            input_metadata = metadata_df)
+w <- Macarron::makeDisMat(se = mbx)
+modules.assn <- Macarron::findMacMod(se = mbx, 
+                                     w = w,
+                                     input_taxonomy = taxonomy_df)
+mets.ava <- Macarron::calAVA(se = mbx,
+                             mod.assn = modules.assn)
 
 }

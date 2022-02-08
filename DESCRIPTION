@@ -1,4 +1,4 @@
-Package: MACARRoN
+Package: Macarron
 Version: 0.99.0
 Title: An R package for prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics studies
 Authors@R: c(
@@ -8,7 +8,7 @@ Authors@R: c(
   )
 Maintainer: Sagun Maharjan <sagunmaharjann@gmail.com>
 Depends: 
-    R (>= 4.1), 
+    R (>= 3.6), 
     SummarizedExperiment
 Imports: 
     BiocParallel,
@@ -24,7 +24,9 @@ Imports:
     xml2,
     RCurl,
     RJSONIO,
-    logging
+    logging,
+    methods,
+    utils
 Suggests: 
     knitr,
     optparse,

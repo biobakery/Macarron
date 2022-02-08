@@ -6,26 +6,26 @@
 \usage{
 makeDisMat(
   se,
-  ptype = NULL,
-  preval = 0.7,
+  metadata_variable = NULL,
+  min_prevalence = 0.7,
   execution_mode = "serial",
   optimize.for = c("runtime", "memory")
 )
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using MACARRoN::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::makeSumExp().}
 
-\item{ptype}{metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.}
+\item{metadata_variable}{metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.}
 
-\item{preval}{prevalence threshold (percentage). Default = 0.7.}
+\item{min_prevalence}{prevalence threshold (percentage). Default = 0.7.}
 
-\item{execution_mode}{serial or multi processing with BiocParallel. Default: "serial" (recommended for laptops). 
-"multi" may be used when running MACARRoN on a cluster.}
+\item{execution_mode}{"serial" or "multi" processing with BiocParallel. Default: "serial" (recommended for laptops). 
+"multi" may be used when running Macarron on a cluster.}
 
-\item{optimize.for}{TODO
+\item{optimize.for}{runtime or memory.
 
-Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
-e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in at least 70% of A samples
+Features present (i.e. not NA) in "min_prevalence" of samples in each category of a "metadata_variable" will be considered 
+e.g. if min_prevalence is 0.7 and metadata_variable has 2 categories A and B, union of (i) features present in at least 70% of A samples
 and (ii) features present in at least 70% of B samples, will be considered for distance matrix generation. 
 Correlation between feature abundances are is calculated using WGCNA::bicor().}
 }
@@ -36,8 +36,16 @@ w distance matrix where distance = 1-bicor^3
 Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix.
 }
 \examples{
-se <- makeSumExp(feat_int, feat_anno, exp_meta)
-w <- makeDisMat(se)
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+abundances_df = read.csv(file = prism_abundances, row.names = 1)
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+metadata_df = read.csv(file = prism_metadata)
+mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+                            input_annotations = annotations_df,
+                            input_metadata = metadata_df)
+w <- Macarron::makeDisMat(se = mbx)
 
 
 }

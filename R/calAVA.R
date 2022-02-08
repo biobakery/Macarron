@@ -7,20 +7,36 @@
 #' 
 #' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
 #' @param mod.assn the output of MACARRoN::findMacMod().
-#' @param ptype metadata of interest. Default: Column 2 of metadata table. 
-#' @param anchor.anno anchor identification. Default: column 2 of annotation dataframe.
-#' Note: ptype must be consistent across ava, q-value and effect-size calculations.
-#' @return mac.ava
+#' @param metadata_variable metadata of interest. Default: Column 2 of metadata table. 
+#' @param anchor_annotation anchor identification. Default: column 2 of annotation dataframe.
+#' Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.
+#' @return mac.ava abundance versus anchor values of metabolic features
 #' 
 #' @examples 
-#' mac.ava <- calAVA(mbx, mod.assn)
+#' prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+#' abundances_df = read.csv(file = prism_abundances, row.names = 1)
+#' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+#' annotations_df = read.csv(file = prism_annotations, row.names = 1)
+#' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+#' metadata_df = read.csv(file = prism_metadata)
+#' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+#' taxonomy_df = read.csv(file = met_taxonomy)
+#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#'                             input_annotations = annotations_df,
+#'                             input_metadata = metadata_df)
+#' w <- Macarron::makeDisMat(se = mbx)
+#' modules.assn <- Macarron::findMacMod(se = mbx, 
+#'                                      w = w,
+#'                                      input_taxonomy = taxonomy_df)
+#' mets.ava <- Macarron::calAVA(se = mbx,
+#'                              mod.assn = modules.assn)
 #' 
 #' @export
 
 calAVA <- function(se, 
                    mod.assn,
-                   ptype = NULL,
-                   anchor.anno = NULL)
+                   metadata_variable = NULL,
+                   anchor_annotation = NULL)
   {
   mod.assn <- as.data.frame(mod.assn)
   fint <- as.data.frame(SummarizedExperiment::assay(se))
@@ -28,14 +44,14 @@ calAVA <- function(se,
   fint <- t(fint)
   
   # Setting the metadata
-  if(is.null(ptype)){
-    ptype <- names(SummarizedExperiment::colData(se))[1]
-    message(paste0("Metadata chosen for AVA calculation: ",ptype))
+  if(is.null(metadata_variable)){
+    metadata_variable <- names(SummarizedExperiment::colData(se))[1]
+    message(paste0("Metadata chosen for AVA calculation: ",metadata_variable))
   }else{
-    ptype = ptype
-    message(paste0("Metadata chosen for AVA calculation: ",ptype))
+    metadata_variable = metadata_variable
+    message(paste0("Metadata chosen for AVA calculation: ",metadata_variable))
   }
-  grps <- unique(se[[ptype]])
+  grps <- unique(se[[metadata_variable]])
   
   # Identification of the anchor in each module
   anchors <- NULL
@@ -55,7 +71,7 @@ calAVA <- function(se,
     # Mean abundances in phenotypes
     means <- NULL
     for (g in grps){
-      ind <- se[[ptype]] == g
+      ind <- se[[metadata_variable]] == g
       if(length(r) > 1){
         gmean <- apply(fint[ind,r],2,function(x) mean(x, na.rm = TRUE))
         d <- data.frame(m, g, max(gmean), stringsAsFactors = FALSE)
@@ -85,7 +101,7 @@ calAVA <- function(se,
   cal.ava <- function(i){
     message(paste0("Calculating AVA for feature: ",i))
     getMean <- function(g){
-      ind <- se[[ptype]] == g
+      ind <- se[[metadata_variable]] == g
       gmean <- mean(fint[ind,i], na.rm = TRUE)
       gmean
     }
@@ -106,10 +122,10 @@ calAVA <- function(se,
   
   # Assign anchors
   anno <- as.data.frame(rowData(se))
-  if(is.null(anchor.anno)){
-    anchor.anno <- colnames(anno)[2]
+  if(is.null(anchor_annotation)){
+    anchor_annotation <- colnames(anno)[2]
   }else{
-    anchor.anno <- anchor.anno
+    anchor_annotation <- anchor_annotation
   }
   
   ann.mod <- unique(mod.assn[which(mod.assn[,1] != ""),2])
@@ -119,7 +135,7 @@ calAVA <- function(se,
   
   assignAnchor <- function(m){
       anchor.feature <- rownames(ava[which(ava$module == m & ava$ava == 1),])
-      anchor.name <- as.character(anno[anchor.feature, anchor.anno])
+      anchor.name <- as.character(anno[anchor.feature, anchor_annotation])
     }
   ann.mod$anchor <- as.character(sapply(ann.mod$module, function(m) assignAnchor(m)))
   ann.mod[ann.mod == "character(0)"] <- ""

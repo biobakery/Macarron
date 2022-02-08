@@ -1,21 +1,22 @@
 #' Create a chemical taxonomy table for annotated metabolic features.
 #' 
-#' @param feat_anno a dataframe (features x annotations) containing the available feature annotations.
+#' @param input_annotations a dataframe (features x annotations) containing the available feature annotations.
 #' ^^Column 1 must contain standard annotations such as HMDB ID or PubChem CID for 
 #' the subset of identified/annotated metabolic features. 
 #' 
-#' @return dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
+#' @return input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
 #' 
-#' chem_tax <- decorateID(feat_anno)
-#' 
-#' 
+#' @examples 
+#' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+#' annotations_df = read.csv(file = prism_annotations, row.names = 1)
+#' input_taxonomy <- decorateID(annotations_df)
 #' 
 #' @export
 
 
-decorateID <- function(feat_anno)
+decorateID <- function(input_annotations)
 {
-    ID_list <- unique(feat_anno[,1][feat_anno[,1] != ""])
+    ID_list <- unique(input_annotations[,1][input_annotations[,1] != ""])
     
     # function if HMDB Accession
     ChemTax_HMDB <- function(h){
@@ -45,14 +46,14 @@ decorateID <- function(feat_anno)
     }
 
     # create the final dataframe
-    if(ID_list[1] %like% "HMDB"){
+    if(grepl("HMDB", ID_list[1])){
         tax_df <- do.call(rbind, lapply(ID_list, function(x) ChemTax_HMDB(x)))
     }else{
         tax_df <- do.call(rbind, lapply(ID_list, function(x) ChemTax_PubChem(x)))
     }
-    colnames(tax_df) <- c(names(feat_anno)[1],"Sub_Class","Class")
+    colnames(tax_df) <- c(names(input_annotations)[1],"Sub_Class","Class")
     tax_df <- as.data.frame(tax_df)
-    file_name <- paste0(names(feat_anno)[1],"_taxonomy.csv")
+    file_name <- paste0(names(input_annotations)[1],"_taxonomy.csv")
     write.csv(tax_df, file=file_name, row.names=FALSE)
     return(tax_df)
 }

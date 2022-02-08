@@ -7,27 +7,27 @@
 findMacMod(
   se,
   w,
-  chem_tax = NULL,
-  annot = NULL,
-  mms = NULL,
+  input_taxonomy = NULL,
+  standard_identifier = NULL,
+  min_module_size = NULL,
   evaluateMOS = TRUE
 )
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using MACARRoN::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::makeSumExp().}
 
-\item{w}{distance matrix from function MACARRoN::makeDisMat().}
+\item{w}{distance matrix from function Macarron::makeDisMat().}
 
-\item{chem_tax}{chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. 
-Can be created using the decorateID.R utility of MACARRoN. 
-Annotation specified with "annot" and annotation in the first column of the chemical taxonomy file must match.}
+\item{input_taxonomy}{chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. 
+Can be created using the decorateID.R utility of Macarron. 
+Annotation specified with "standard_identifier" and annotation in the first column of the chemical taxonomy file must match.}
 
-\item{annot}{a feature annotation of choice e.g. HMDB ID/Pubchem CID/Metabolite name. Default: Column 1 in annotation table.}
+\item{standard_identifier}{HMDB ID or Pubchem CID. Default: Column 1 in annotation table.}
 
-\item{mms}{minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
+\item{min_module_size}{minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
 Default is cube root of number of prevalent features.}
 
-\item{evaluateMOS}{examine measure of success for modules identified using mms, mms + 5, mms + 10, mms - 5, mms - 10}
+\item{evaluateMOS}{examine measure of success for modules identified using min_module_size, min_module_size + 5, min_module_size + 10, min_module_size - 5, min_module_size - 10}
 }
 \value{
 mod.assn metabolic features clustered into "modules" based on covarying abundances
@@ -36,7 +36,22 @@ mod.assn metabolic features clustered into "modules" based on covarying abundanc
 Cluster metabolic features based on covarying abundances into modules
 }
 \examples{
-mod.assn <- findMacMod(se, w, chem_tax)
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+abundances_df = read.csv(file = prism_abundances, row.names = 1)
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+metadata_df = read.csv(file = prism_metadata)
+met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+taxonomy_df = read.csv(file = met_taxonomy)
+mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+                            input_annotations = annotations_df,
+                            input_metadata = metadata_df)
+w <- Macarron::makeDisMat(se = mbx)
+modules.assn <- Macarron::findMacMod(se = mbx, 
+                                     w = w,
+                                     input_taxonomy = taxonomy_df) 
+
 
 
 }

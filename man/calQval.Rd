@@ -7,12 +7,12 @@
 calQval(
   se,
   mod.assn,
-  ptype = NULL,
-  fix.eff = NULL,
-  ran.eff = NULL,
+  metadata_variable = NULL,
+  fixed_effects = NULL,
+  random_effects = NULL,
   reference = NULL,
-  output.folder = NULL,
-  ncores = 1
+  output_folder = NULL,
+  cores = 1
 )
 }
 \arguments{
@@ -20,32 +20,47 @@ calQval(
 
 \item{mod.assn}{the output of MACARRoN::findMacMod().}
 
-\item{ptype}{metadata of interest. Default: Column 2 of metadata table. 
-Note: ptype must be consistent across ava, q-value and effect-size calculations.}
+\item{metadata_variable}{metadata of interest. Default: Column 2 of metadata table. 
+Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.}
 
-\item{fix.eff}{fixed effects, comma delimited e.g. c("metadata1","metadata2"). Default: all columns in metadata.}
+\item{fixed_effects}{fixed effects, comma delimited e.g. c("metadata1","metadata2"). Default: all columns in metadata.}
 
-\item{ran.eff}{random effects, comma delimited. Default: NULL.}
+\item{random_effects}{random effects, comma delimited. Default: NULL.}
 
 \item{reference}{a reference level/group in each metadata, comma delimited e.g. c("metadata1,ref1","metadata2,ref2"). 
 Default: alphabetically first phenotype/condition will be used as reference. 
 Note: Reference must be specified for metadata with more than 2 levels.}
 
-\item{output.folder}{the name of the output folder where all MaAsLin2 results will be written. Default: maaslin2_output}
+\item{output_folder}{the name of the output folder where all MaAsLin2 results will be written. Default: maaslin2_output}
 
-\item{ncores}{the number of R processes to run in parallel}
+\item{cores}{the number of R processes to run in parallel.}
 }
 \value{
-mac.qval
+mac.qval q-value of metabolic features in phenotypes of interest.
 }
 \description{
 This function uses the MaAsLin2 package for estimating q-value of differential abundance.
 Multiple fixed and random effects can be specified for fitting the multiple regression model. 
 Default analysis method is "LM". Can be run on multiple cores.
-ptype and ref (reference group) should be the same as the one specified for effect size calculation.
+metadata_variable and ref (reference group) should be the same as the one specified for effect size calculation.
 }
 \examples{
-mac.qval <- calQval(se, mod.assn, ptype, fix.eff, ran.eff, reference, output.folder)
-
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+abundances_df = read.csv(file = prism_abundances, row.names = 1)
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+metadata_df = read.csv(file = prism_metadata)
+met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+taxonomy_df = read.csv(file = met_taxonomy)
+mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+                            input_annotations = annotations_df,
+                            input_metadata = metadata_df)
+w <- Macarron::makeDisMat(se = mbx)
+modules.assn <- Macarron::findMacMod(se = mbx, 
+                                     w = w,
+                                     input_taxonomy = taxonomy_df)
+mets.qval <- Macarron::calQval(se = mbx,
+                               mod.assn = modules.assn)
 
 }

@@ -6,16 +6,41 @@
 #' Top-ranked features have good relative abundance, and are significantly perturbed 
 #' in the specified environment/phenotype.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp()
-#' @param mod.assn the output of MACARRoN::findMacMod()
-#' @param mac.ava the output of MACARRoN::calAVA()
-#' @param mac.qval the output of MACARRoN::calQval()
-#' @param mac.es the output of MACARRoN::calES()
+#' @param se SummarizedExperiment object created using Macarron::makeSumExp()
+#' @param mod.assn the output of Macarron::findMacMod()
+#' @param mac.ava the output of Macarron::calAVA()
+#' @param mac.qval the output of Macarron::calQval()
+#' @param mac.es the output of Macarron::calES()
 #' 
 #' @return mac.result - metabolic features listed according to priority 
 #' 
 #' @examples 
-#' mac.result <- prioritize(se, mod.assn, mac.ava, mac.qval, mac.es)
+#' prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+#' abundances_df = read.csv(file = prism_abundances, row.names = 1)
+#' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+#' annotations_df = read.csv(file = prism_annotations, row.names = 1)
+#' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+#' metadata_df = read.csv(file = prism_metadata)
+#' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+#' taxonomy_df = read.csv(file = met_taxonomy)
+#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#'                             input_annotations = annotations_df,
+#'                             input_metadata = metadata_df)
+#' w <- Macarron::makeDisMat(se = mbx)
+#' modules.assn <- Macarron::findMacMod(se = mbx, 
+#'                                      w = w,
+#'                                      input_taxonomy = taxonomy_df)
+#' mets.ava <- Macarron::calAVA(se = mbx,
+#'                              mod.assn = modules.assn)                                     
+#' mets.qval <- Macarron::calQval(se = mbx,
+#'                                mod.assn = modules.assn)
+#' mets.es <- Macarron::calES(se = mbx,
+#'                            mac.qval = mets.qval)
+#' mets.prioritized <- Macarron::prioritize(se = mbx,
+#'                                          mod.assn = modules.assn,
+#'                                          mac.ava = mets.ava,
+#'                                          mac.qval = mets.qval,
+#'                                          mac.es = mets.es)                         
 #' 
 #' 
 #' @export

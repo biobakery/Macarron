@@ -4,12 +4,30 @@
 #' test and control (reference) samples. For the specified metadata variable, effect size 
 #' is calculated for all test categories against the reference category.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
-#' @param mac.qval the output of MACARRoN::calQval().
-#' @return mac.efs
+#' @param se SummarizedExperiment object created using Macarron::makeSumExp().
+#' @param mac.qval the output of Macarron::calQval().
+#' @return mac.es effect sizes of metabolic features in phenotypes of interest.
 #' 
 #' @examples 
-#' mac.es <- calES(se, mac.qval)
+#' prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+#' abundances_df = read.csv(file = prism_abundances, row.names = 1)
+#' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+#' annotations_df = read.csv(file = prism_annotations, row.names = 1)
+#' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+#' metadata_df = read.csv(file = prism_metadata)
+#' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+#' taxonomy_df = read.csv(file = met_taxonomy)
+#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#'                             input_annotations = annotations_df,
+#'                             input_metadata = metadata_df)
+#' w <- Macarron::makeDisMat(se = mbx)
+#' modules.assn <- Macarron::findMacMod(se = mbx, 
+#'                                      w = w,
+#'                                      input_taxonomy = taxonomy_df)
+#' mets.qval <- Macarron::calQval(se = mbx,
+#'                                mod.assn = modules.assn)
+#' mets.es <- Macarron::calES(se = mbx,
+#'                            mac.qval = mets.qval)                               
 #' 
 #' @export
 

@@ -1,28 +1,36 @@
 #' Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
-#' @param ptype metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.
-#' @param preval prevalence threshold (percentage). Default = 0.7.
-#' @param execution_mode serial or multi processing with BiocParallel. Default: "serial" (recommended for laptops). 
-#' "multi" may be used when running MACARRoN on a cluster. 
-#' @param optimize.for TODO
+#' @param se SummarizedExperiment object created using Macarron::makeSumExp().
+#' @param metadata_variable metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.
+#' @param min_prevalence prevalence threshold (percentage). Default = 0.7.
+#' @param execution_mode "serial" or "multi" processing with BiocParallel. Default: "serial" (recommended for laptops). 
+#' "multi" may be used when running Macarron on a cluster. 
+#' @param optimize.for runtime or memory.
 #' 
-#' Features present (i.e. not NA) in "preval" of samples in each category of a "ptype" will be considered 
-#' e.g. if preval is 0.7 and ptype has 2 categories A and B, union of (i) features present in at least 70% of A samples
+#' Features present (i.e. not NA) in "min_prevalence" of samples in each category of a "metadata_variable" will be considered 
+#' e.g. if min_prevalence is 0.7 and metadata_variable has 2 categories A and B, union of (i) features present in at least 70% of A samples
 #' and (ii) features present in at least 70% of B samples, will be considered for distance matrix generation. 
 #' Correlation between feature abundances are is calculated using WGCNA::bicor().
 #' @return w distance matrix where distance = 1-bicor^3
 #' 
 #' @examples 
-#' se <- makeSumExp(feat_int, feat_anno, exp_meta)
-#' w <- makeDisMat(se)
+#' prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+#' abundances_df = read.csv(file = prism_abundances, row.names = 1)
+#' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+#' annotations_df = read.csv(file = prism_annotations, row.names = 1)
+#' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+#' metadata_df = read.csv(file = prism_metadata)
+#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#'                             input_annotations = annotations_df,
+#'                             input_metadata = metadata_df)
+#' w <- Macarron::makeDisMat(se = mbx)
 #' 
 #' 
 #' @export
 
 makeDisMat <- function(se, 
-                       ptype = NULL,
-                       preval=0.7,
+                       metadata_variable = NULL,
+                       min_prevalence=0.7,
                        execution_mode = "serial",
                        optimize.for = c("runtime", "memory"))
 {
@@ -33,21 +41,21 @@ makeDisMat <- function(se,
   mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
   
   # Phenotype i.e. groups/conditions
-  if(is.null(ptype)){
-    ptype <- names(SummarizedExperiment::colData(se))[1]
-    message(paste0("Metadata chosen for prevalence filtering: ",ptype))
+  if(is.null(metadata_variable)){
+    metadata_variable <- names(SummarizedExperiment::colData(se))[1]
+    message(paste0("Metadata chosen for prevalence filtering: ",metadata_variable))
   }else{
-    ptype <- ptype
-    message(paste0("Metadata chosen for prevalence filtering: ",ptype))
+    metadata_variable <- metadata_variable
+    message(paste0("Metadata chosen for prevalence filtering: ",metadata_variable))
   }
-  grps <- unique(se[[ptype]])
+  grps <- unique(se[[metadata_variable]])
   
   # Function: Get features that satisfy prevalence threshold in each condition
   .getIds <- function(g)
   {
-    ind <- se[[ptype]] == g
+    ind <- se[[metadata_variable]] == g
     smat <- mat[,ind]
-    ind <- DelayedArray::rowMeans(is.na(smat)) <= 1 - preval
+    ind <- DelayedArray::rowMeans(is.na(smat)) <= 1 - min_prevalence
     ind
   }
   
@@ -65,8 +73,8 @@ makeDisMat <- function(se,
     .getCorMat <- function(g)
     {
       message(g)
-      inx <- se[[ptype]] == g
-      ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=preval
+      inx <- se[[metadata_variable]] == g
+      ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=min_prevalence
       gmat <- mat[ind,inx]
       tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
       rownames(tmp) <- rownames(mat)
@@ -97,8 +105,8 @@ makeDisMat <- function(se,
     }else{
       for (g in grps){
         message(g)
-        inx <- se[[ptype]] == g
-        ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=preval
+        inx <- se[[metadata_variable]] == g
+        ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=min_prevalence
         gmat <- mat[ind,inx]
         tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
         rownames(tmp) <- rownames(mat)

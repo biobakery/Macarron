@@ -4,18 +4,22 @@
 \alias{decorateID}
 \title{Create a chemical taxonomy table for annotated metabolic features.}
 \usage{
-decorateID(feat_anno)
+decorateID(input_annotations)
 }
 \arguments{
-\item{feat_anno}{a dataframe (features x annotations) containing the available feature annotations.
+\item{input_annotations}{a dataframe (features x annotations) containing the available feature annotations.
 ^^Column 1 must contain standard annotations such as HMDB ID or PubChem CID for 
 the subset of identified/annotated metabolic features.}
 }
 \value{
-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
-
-chem_tax <- decorateID(feat_anno)
+input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
 }
 \description{
 Create a chemical taxonomy table for annotated metabolic features.
+}
+\examples{
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+input_taxonomy <- decorateID(annotations_df)
+
 }

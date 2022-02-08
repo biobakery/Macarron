@@ -4,16 +4,17 @@
 \alias{makeSumExp}
 \title{Create a SummarizedExperiment object}
 \usage{
-makeSumExp(feat_int, feat_anno, exp_meta)
+makeSumExp(input_abundances, input_annotations, input_metadata)
 }
 \arguments{
-\item{feat_int}{a dataframe (features x samples) containing metabolic feature intensities (abundances).}
+\item{input_abundances}{a dataframe (features x samples) containing metabolic feature intensities (abundances).}
 
-\item{feat_anno}{a dataframe (features x annotations) containing the available feature annotations.
+\item{input_annotations}{a dataframe (features x annotations) containing the available feature annotations.
 ^^Column 1 must contain standard annotations such as HMDB ID or Pubchem CID for 
-the subset of identified/annotated features.}
+the subset of identified/annotated features. 
+^^Column 2 must contain metabolite name.}
 
-\item{exp_meta}{a dataframe (samples x metadata) containing sample metadata.
+\item{input_metadata}{a dataframe (samples x metadata) containing sample metadata.
 ^^Column 1 must identify samples. It will be used for creating rownames.
 ^^Column 2 must identify phenotypes or conditions (categorical metadata) associated with the samples. 
 Must not contain NA. Rows with no specified phenotype/condition will be removed.}
@@ -25,6 +26,14 @@ SummarizedExperiment object
 Create a SummarizedExperiment object
 }
 \examples{
-se <- makeSumExp(feat_int,feat_anno,exp_meta)
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+abundances_df = read.csv(file = prism_abundances, row.names = 1)
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+metadata_df = read.csv(file = prism_metadata)
+mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+                            input_annotations = annotations_df,
+                            input_metadata = metadata_df)
 
 }

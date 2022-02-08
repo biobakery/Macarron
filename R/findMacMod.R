@@ -1,28 +1,43 @@
 #' Cluster metabolic features based on covarying abundances into modules
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
-#' @param w distance matrix from function MACARRoN::makeDisMat().
-#' @param chem_tax chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. 
-#' Can be created using the decorateID.R utility of MACARRoN. 
-#' Annotation specified with "annot" and annotation in the first column of the chemical taxonomy file must match.
-#' @param annot a feature annotation of choice e.g. HMDB ID/Pubchem CID/Metabolite name. Default: Column 1 in annotation table.
-#' @param mms minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
+#' @param se SummarizedExperiment object created using Macarron::makeSumExp().
+#' @param w distance matrix from function Macarron::makeDisMat().
+#' @param input_taxonomy chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. 
+#' Can be created using the decorateID.R utility of Macarron. 
+#' Annotation specified with "standard_identifier" and annotation in the first column of the chemical taxonomy file must match.
+#' @param standard_identifier HMDB ID or Pubchem CID. Default: Column 1 in annotation table.
+#' @param min_module_size minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
 #' Default is cube root of number of prevalent features.
-#' @param evaluateMOS examine measure of success for modules identified using mms, mms + 5, mms + 10, mms - 5, mms - 10
+#' @param evaluateMOS examine measure of success for modules identified using min_module_size, min_module_size + 5, min_module_size + 10, min_module_size - 5, min_module_size - 10
 #' 
 #' @return mod.assn metabolic features clustered into "modules" based on covarying abundances
 #' 
 #' @examples 
-#' mod.assn <- findMacMod(se, w, chem_tax)
+#' prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+#' abundances_df = read.csv(file = prism_abundances, row.names = 1)
+#' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+#' annotations_df = read.csv(file = prism_annotations, row.names = 1)
+#' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+#' metadata_df = read.csv(file = prism_metadata)
+#' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+#' taxonomy_df = read.csv(file = met_taxonomy)
+#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#'                             input_annotations = annotations_df,
+#'                             input_metadata = metadata_df)
+#' w <- Macarron::makeDisMat(se = mbx)
+#' modules.assn <- Macarron::findMacMod(se = mbx, 
+#'                                      w = w,
+#'                                      input_taxonomy = taxonomy_df) 
+#' 
 #' 
 #' 
 #' @export
 
 findMacMod <- function(se, 
                         w, 
-                        chem_tax = NULL,
-                        annot = NULL,
-                        mms = NULL,
+                        input_taxonomy = NULL,
+                        standard_identifier = NULL,
+                        min_module_size = NULL,
                         evaluateMOS = TRUE)
 {
   # Construct tree 
@@ -30,18 +45,18 @@ findMacMod <- function(se,
   message("Tree constructed")
   
   # Setting the minimum module size
-  if(is.null(mms)){
-    mms = round((nrow(w))^(1/3))
+  if(is.null(min_module_size)){
+    min_module_size = round((nrow(w))^(1/3))
   }else{
-    mms = as.numeric(as.character(mms))
+    min_module_size = as.numeric(as.character(min_module_size))
   }
   
   # Module assignments
   anno <- as.data.frame(SummarizedExperiment::rowData(se))
-  if(is.null(annot)){
+  if(is.null(standard_identifier)){
     mod.assn <- as.data.frame(anno[colnames(w),1])
   }else{
-    mod.assn <- as.data.frame(anno[colnames(w),annot])
+    mod.assn <- as.data.frame(anno[colnames(w),standard_identifier])
   }
   rownames(mod.assn) <- colnames(w)
   
@@ -52,9 +67,9 @@ findMacMod <- function(se,
     
     message("Evaluating measures of success")
     
-    # Range of mms for measures of success
-    mms.list <- c(mms - 10, mms - 5, mms, mms + 5, mms + 10)
-    mms.list <- mms.list[which(mms.list > 1)]
+    # Range of min_module_size for measures of success
+    min_module_size.list <- c(min_module_size - 10, min_module_size - 5, min_module_size, min_module_size + 5, min_module_size + 10)
+    min_module_size.list <- min_module_size.list[which(min_module_size.list > 1)]
     
     # Measures of success
     sing <- NULL # singletons
@@ -67,7 +82,7 @@ findMacMod <- function(se,
     pers <- NULL # 90th percentile subclasses per module
     fham <- NULL # % features in homogeneously annotated modules
     
-    for (n in mms.list){
+    for (n in min_module_size.list){
       mod.assn[,2] <- as.vector(dynamicTreeCut::cutreeDynamic(dendro = tree, 
                                                               distM = as.matrix(w), 
                                                               deepSplit = TRUE, 
@@ -105,7 +120,7 @@ findMacMod <- function(se,
         dat <- mod.assn.ann[which(mod.assn.ann[,2] == i & mod.assn.ann[,1] != ""),]
         mod.tax <- NULL
         for (d in unique(dat[,1])){
-          feat.tax <- chem_tax[which(chem_tax[,1] == d),]
+          feat.tax <- input_taxonomy[which(input_taxonomy[,1] == d),]
           mod.tax <- rbind(mod.tax,feat.tax)
         }
         cls <- rbind(scl, length(unique(mod.tax[,3])))
@@ -119,7 +134,7 @@ findMacMod <- function(se,
       # % features in homogeneously annotated modules
       dat <- as.data.frame(unique(mod.assn.ann))
       dat$class <- sapply(as.character(dat[,1]), 
-                          function(x) as.character(chem_tax[which(chem_tax[,1] == x),3]))
+                          function(x) as.character(input_taxonomy[which(input_taxonomy[,1] == x),3]))
       rownames(dat) <- NULL
       dat$class <- as.character(dat$class)
       dat$class[which(dat$class == "character(0)")] <- ""
@@ -144,9 +159,9 @@ findMacMod <- function(se,
     }
     
     # Writing results to file
-    mac.mos <- data.frame(cbind(mms.list, totc, sing, pann, hscc, maxc, perc, maxs, pers, fham))
+    mac.mos <- data.frame(cbind(min_module_size.list, totc, sing, pann, hscc, maxc, perc, maxs, pers, fham))
     rownames(mac.mos) <- NULL
-    colnames(mac.mos) <- c("Minimum module size (MMS)",
+    colnames(mac.mos) <- c("Minimum module size (min_module_size)",
                            "Total modules",
                            "Singletons",
                            "% Annotated modules",
@@ -167,11 +182,11 @@ findMacMod <- function(se,
                                                           distM = as.matrix(w), 
                                                           deepSplit = TRUE, 
                                                           pamRespectsDendro = TRUE,
-                                                          minClusterSize = mms))
-  if(is.null(annot)){
+                                                          minClusterSize = min_module_size))
+  if(is.null(standard_identifier)){
     colnames(mod.assn) <- c(names(anno)[1],"module")
   }else{
-    colnames(mod.assn) <- c(annot,"module")
+    colnames(mod.assn) <- c(standard_identifier,"module")
   }
   
   ann.mod <- unique(mod.assn[which(mod.assn[,1] != ""),2])
@@ -183,7 +198,7 @@ findMacMod <- function(se,
   assignChemTax <- function(m){
     if(m > 0){
       annotated.features <- unique(mod.assn[which(mod.assn$module == m & mod.assn[,1] != ""),1])
-      classes <- toString(unique(chem_tax[which(chem_tax[,1] %in% annotated.features),3]))
+      classes <- toString(unique(input_taxonomy[which(input_taxonomy[,1] %in% annotated.features),3]))
     }else{
       classes <- ""
     }
