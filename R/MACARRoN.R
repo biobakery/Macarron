@@ -14,7 +14,10 @@
 #' @param fixed_effects Covariates for linear modeling with MaAsLin2. Default: All columns of metadata dataframe.
 #' @param random_effects Random effects for linear modeling with MaAsLin2. Default: NULL.
 #' @param reference Reference category (factor) in categorical metadata covariates containing three or more levels. Must be provided as a string of 'covariate,reference' semi-colon delimited for multiple covariates.
-#' @param cores MaAsLin2 parameter-The number of R processes to be run in parallel.
+#' @param cores MaAsLin2 option-The number of R processes to be run in parallel.
+#' @param plot_heatmap 	MaAslin2 option-Generate a heatmap for the significant associations. Default: TRUE
+#' @param plot_scatter 	MaAslin2 option-Generate scatter plots for the significant associations. Default: FALSE
+#' @param heatmap_first_n MaAslin2 option-Generate heatmap for top n significant associations. Default: 50
 #' 
 #' @return data.frame containing metabolic features listed according to their priority (potential bioactivity) in a phenotype of interest.
 #' 
@@ -50,7 +53,10 @@ MACARRoN <-
     fixed_effects = NULL,
     random_effects = NULL,
     reference = NULL,
-    cores = 1
+    cores = 1,
+    plot_heatmap = TRUE,
+    plot_scatter = FALSE,
+    heatmap_first_n = 50
   )
   {
     
@@ -596,8 +602,9 @@ MACARRoN <-
                          min_abundance = 0,
                          min_variance = 0,
                          cores = cores,
-                         plot_heatmap = FALSE,
-                         plot_scatter = FALSE)
+                         plot_heatmap = plot_heatmap,
+                         plot_scatter = plot_scatter,
+                         heatmap_first_n = heatmap_first_n)
     
     results_dat <- as.data.frame(fit.data$results[which(fit.data$results$metadata == ptype),
                                                   c("feature","metadata","value","coef","pval")]) 

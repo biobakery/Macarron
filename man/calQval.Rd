@@ -12,7 +12,10 @@ calQval(
   random_effects = NULL,
   reference = NULL,
   output_folder = NULL,
-  cores = 1
+  cores = 1,
+  plot_heatmap = TRUE,
+  plot_scatter = FALSE,
+  heatmap_first_n = 50
 )
 }
 \arguments{
@@ -34,6 +37,12 @@ Note: Reference must be specified for metadata with more than 2 levels.}
 \item{output_folder}{the name of the output folder where all MaAsLin2 results will be written. Default: maaslin2_output}
 
 \item{cores}{the number of R processes to run in parallel.}
+
+\item{plot_heatmap}{Maaslin2 option-Generate a heatmap for the significant associations. Default: TRUE}
+
+\item{plot_scatter}{Maaslin2 option-Generate scatter plots for the significant associations. Default: FALSE}
+
+\item{heatmap_first_n}{Maaslin2 option-Generate heatmap for top n significant associations. Default: 50}
 }
 \value{
 mac.qval q-value of metabolic features in phenotypes of interest.

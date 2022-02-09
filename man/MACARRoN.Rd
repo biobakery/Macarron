@@ -19,7 +19,10 @@ MACARRoN(
   fixed_effects = NULL,
   random_effects = NULL,
   reference = NULL,
-  cores = 1
+  cores = 1,
+  plot_heatmap = TRUE,
+  plot_scatter = FALSE,
+  heatmap_first_n = 50
 )
 }
 \arguments{
@@ -51,7 +54,13 @@ MACARRoN(
 
 \item{reference}{Reference category (factor) in categorical metadata covariates containing three or more levels. Must be provided as a string of 'covariate,reference' semi-colon delimited for multiple covariates.}
 
-\item{cores}{MaAsLin2 parameter-The number of R processes to be run in parallel.}
+\item{cores}{MaAsLin2 option-The number of R processes to be run in parallel.}
+
+\item{plot_heatmap}{MaAslin2 option-Generate a heatmap for the significant associations. Default: TRUE}
+
+\item{plot_scatter}{MaAslin2 option-Generate scatter plots for the significant associations. Default: FALSE}
+
+\item{heatmap_first_n}{MaAslin2 option-Generate heatmap for top n significant associations. Default: 50}
 }
 \value{
 data.frame containing metabolic features listed according to their priority (potential bioactivity) in a phenotype of interest.

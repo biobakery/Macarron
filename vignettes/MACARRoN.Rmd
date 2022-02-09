@@ -10,12 +10,12 @@ author:
    email: sagunmaharjann@gmail.com
 output: html_document
 vignette: >
-    %\VignetteIndexEntry{MACARRoN}
+    %\VignetteIndexEntry{Macarron}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 
-## MACARRoN User Manual ##  
+## Macarron User Manual ##  
   
 MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction
   of Novel bioactives) is a workflow to systematically identify and prioritize
@@ -25,10 +25,10 @@ MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction
   i.e. annotated compounds, ecological properties such as prevalence and 
   relative abundance and association with environmental parameters or phenotypes.
 
-If you use the MACARRoN software, please cite our manuscript: 
+If you use the Macarron software, please cite our manuscript: 
 
 If you have questions, please direct it to:
-[MACARRoN Forum](https://forum.biobakery.org/c/microbial-community-profiling/macarron)
+[Macarron Forum](https://forum.biobakery.org/c/microbial-community-profiling/Macarron)
 
 ---
    
@@ -40,19 +40,19 @@ If you have questions, please direct it to:
 
 ## Description ## 
 
-MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives)
+Macarron (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives)
   is a workflow to systematically identify and prioritize potentially bioactive (and often unannotated)
   small molecules in microbial community metabolomic datasets.
 
 ## Requirements ## 
 
-MACARRoN is an R package that can be run as a set of R functions or via a command line wrapper.
+Macarron is an R package that can be run as a set of R functions or via a command line wrapper.
 
 
 ## Installation ##
 
-If only running from the command line, you do not need to install the MACARRoN package but you will 
-need to install the MACARRoN dependencies.
+If only running from the command line, you do not need to install the Macarron package but you will 
+need to install the Macarron dependencies.
 
 ### From the command line ###
 1. Install the Bioconductor dependencies: SummarizedExperiment, BiocParallel, DelayedArray, Maaslin2 
@@ -63,20 +63,20 @@ and ComplexHeatmap.
 
 ### From R ###
 
-To install the latest version of MACARRoN:
+To install the latest version of Macarron:
 
 ``
 if(!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install("MACARRoN")
+BiocManager::install("Macarron")
 ``
 
-To install the latest development version of MACARRoN:
+To install the latest development version of Macarron:
 
 ``
 install.packages("devtools")
 library("devtools")
-install_github("biobakery/MACARRoN")
+install_github("biobakery/Macarron")
 ``
 
 ## Run a demo ##
@@ -84,16 +84,19 @@ install_github("biobakery/MACARRoN")
 #### In R ####
 
 ```{r}
-library(MACARRoN)
+library(Macarron)
 input_abundances <- system.file(
-    'extdata','demo_abundances.csv', package="MACARRoN")
+    'extdata','demo_abundances.csv', package="Macarron")
 input_annotations <-system.file(
-    'extdata','demo_annotations.csv', package="MACARRoN")
+    'extdata','demo_annotations.csv', package="Macarron")
 input_metadata <-system.file(
-    'extdata','demo_metadata.csv', package="MACARRoN")
+    'extdata','demo_metadata.csv', package="Macarron")
 input_taxonomy <-system.file(
-    'extdata','demo_taxonomy.csv', package="MACARRoN")
-MACARRoN(input_abundances, input_annotations, input_metadata, input_taxonomy)
+    'extdata','demo_taxonomy.csv', package="Macarron")
+mets.prioritized <- Macarron::MACARRoN(input_abundances, 
+                                       input_annotations, 
+                                       input_metadata, 
+                                       input_taxonomy)
 ```
 
 
@@ -107,7 +110,7 @@ sessionInfo()
 
 ### Options
 ```
-Usage: ./MACARRoN.R [Inputs]
+Usage: ./Macarron.R [Inputs]
  <feature_abundances.csv>
  <feature_annotations.csv>
  <sample_metadata.csv>
@@ -119,7 +122,7 @@ Options:
         Show this help message and exit
 
     -o OUTPUT, --output=OUTPUT
-        Output folder name [Default: MACARRoN_output]
+        Output folder name [Default: Macarron_output]
 
     -p METADATA_VARIABLE, --metadata_variable=METADATA_VARIABLE
         Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors) [Default: Second column of metadata table]

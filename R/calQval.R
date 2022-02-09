@@ -16,6 +16,9 @@
 #' Note: Reference must be specified for metadata with more than 2 levels.
 #' @param output_folder the name of the output folder where all MaAsLin2 results will be written. Default: maaslin2_output
 #' @param cores the number of R processes to run in parallel.
+#' @param plot_heatmap 	Maaslin2 option-Generate a heatmap for the significant associations. Default: TRUE
+#' @param plot_scatter 	Maaslin2 option-Generate scatter plots for the significant associations. Default: FALSE
+#' @param heatmap_first_n Maaslin2 option-Generate heatmap for top n significant associations. Default: 50
 #' @return mac.qval q-value of metabolic features in phenotypes of interest.
 #' 
 #' @examples
@@ -47,7 +50,10 @@ calQval <- function(se,
                     random_effects = NULL,
                     reference = NULL,
                     output_folder = NULL,
-                    cores = 1
+                    cores = 1,
+                    plot_heatmap = TRUE,
+                    plot_scatter = FALSE,
+                    heatmap_first_n = 50
                     )
   {
   mod.assn <- as.data.frame(mod.assn)
@@ -78,8 +84,9 @@ calQval <- function(se,
                        min_prevalence = 0,
                        min_abundance = 0,
                        cores = cores,
-                       plot_heatmap = FALSE,
-                       plot_scatter = FALSE)
+                       plot_heatmap = plot_heatmap,
+                       plot_scatter = plot_scatter,
+                       heatmap_first_n = heatmap_first_n)
   
   # Adjusting p-values
   if(is.null(metadata_variable)){

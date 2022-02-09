@@ -29,6 +29,9 @@ args$fixed_effects <- NULL
 args$random_effects <- NULL
 args$reference <- NULL
 args$cores <- 1
+args$plot_heatmap <- TRUE
+args$plot_scatter <- FALSE
+args$heatmap_first_n <- 50
 
 
 ###############################################################################
@@ -58,7 +61,7 @@ options <-
 options <- 
   optparse::add_option(
     options,
-    c("-p", "--metadata_variable"),
+    c("-m", "--metadata_variable"),
     type = "character",
     dest = "metadata_variable",
     default = args$metadata_variable,
@@ -102,7 +105,7 @@ options <-
 options <- 
   optparse::add_option(
     options,
-    c("-m", "--anchor_annotation"),
+    c("-a", "--anchor_annotation"),
     type = "character",
     dest = "anchor_annotation",
     default = args$anchor_annotation,
@@ -167,6 +170,42 @@ options <-
     )
   )
 
+options <-
+  optparse::add_option(
+    options,
+    c("-h", "--plot_heatmap"),
+    type = "logical",
+    dest = "plot_heatmap",
+    default = args$plot_heatmap,
+    help = paste("Maaslin2 parameter; Generate a heatmap for",
+                 "significant associations"
+    )
+  )
+
+options <-
+  optparse::add_option(
+    options,
+    c("-s", "--plot_scatter"),
+    type = "logical",
+    dest = "plot_scatter",
+    default = args$plot_scatter,
+    help = paste("Maaslin2 parameter; Generate scatter plots for",
+                 "significant associations"
+    )
+  )
+
+options <-
+  optparse::add_option(
+    options,
+    c("-t", "--heatmap_first_n"),
+    type = "double",
+    dest = "heatmap_first_n",
+    default = args$heatmap_first_n,
+    help = paste("Maaslin2 parameter; Generate heatmap for top n",
+                 "significant associations [Default: %default]"
+    )
+  )
+
 
 if (identical(environment(), globalenv()) &&
     !length(grep("^source\\(", sys.calls()))) {
@@ -202,5 +241,8 @@ prioritized_metabolites <- MACARRoN(positional_args[1],
                                     current_args$fixed_effects,
                                     current_args$random_effects,
                                     current_args$reference,
-                                    current_args$cores)     
+                                    current_args$cores,
+                                    current_args$plot_heatmap,
+                                    current_args$plot_scatter,
+                                    current_args$heatmap_first_n)     
 }
