@@ -57,11 +57,11 @@ calQval <- function(se,
                     )
   {
   mod.assn <- as.data.frame(mod.assn)
-  fint <- as.data.frame(assay(se))
+  fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[rownames(mod.assn),]
   fint[is.na(fint)] <- 0
   fint <- log2(fint + 1)
-  meta <- as.data.frame(colData(se))
+  meta <- as.data.frame(SummarizedExperiment::colData(se))
   
   # q-value estimation with Maaslin2
  
@@ -90,7 +90,7 @@ calQval <- function(se,
   
   # Adjusting p-values
   if(is.null(metadata_variable)){
-    metadata_variable <- names(colData(se))[1]
+    metadata_variable <- names(SummarizedExperiment::colData(se))[1]
   }else{
     metadata_variable = metadata_variable
   }

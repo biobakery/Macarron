@@ -121,7 +121,7 @@ calAVA <- function(se,
   ava$ava <- round(ava$ava, 6)
   
   # Assign anchors
-  anno <- as.data.frame(rowData(se))
+  anno <- as.data.frame(SummarizedExperiment::rowData(se))
   if(is.null(anchor_annotation)){
     anchor_annotation <- colnames(anno)[2]
   }else{
