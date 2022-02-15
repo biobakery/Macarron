@@ -724,18 +724,18 @@ MACARRoN <-
                                                 "es")],
                         anno[prioritized.features$feature, c(3:ncol(anno))])
     mac.result$feature <- gsub("F","",mac.result$feature)
-    colnames(mac.result) <- c("Feature index",
+    colnames(mac.result) <- c("Feature_index",
                               names(anno)[1],
                               names(anno)[2],
-                              "Rank percentile",
+                              "Priority_score",
                               "Status",
                               "Module",
                               "Anchor",
-                              "Related classes",
-                              "Covaries with standard",
+                              "Related_classes",
+                              "Covaries_with_standard",
                               "AVA",
                               "qvalue",
-                              "effect size",
+                              "effect_size",
                               names(anno)[3:ncol(anno)])
     
     file_name <- "prioritized_metabolites_all.csv"

@@ -8,7 +8,7 @@ Authors@R: c(
   )
 Maintainer: Sagun Maharjan <sagunmaharjann@gmail.com>
 Depends: 
-    R (>= 3.6), 
+    R (>= 4.2.0), 
     SummarizedExperiment
 Imports: 
     BiocParallel,
