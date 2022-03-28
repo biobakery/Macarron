@@ -1,7 +1,7 @@
 #' Create a biweight midcorrelation (WGCNA::bicor()) based distance matrix.
 #' 
-#' @param se SummarizedExperiment object created using Macarron::makeSumExp().
-#' @param metadata_variable metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.
+#' @param se SummarizedExperiment object created using Macarron::prepInput().
+#' @param metadata_variable metadata column identifying phenotypes/conditions to be used to evaluate prevalence of features. Default = Column 1 of metadata dataframe.
 #' @param min_prevalence prevalence threshold (percentage). Default = 0.7.
 #' @param execution_mode "serial" or "multi" processing with BiocParallel. Default: "serial" (recommended for laptops). 
 #' "multi" may be used when running Macarron on a cluster. 
@@ -19,8 +19,8 @@
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 #' annotations_df = read.csv(file = prism_annotations, row.names = 1)
 #' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-#' metadata_df = read.csv(file = prism_metadata)
-#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#' metadata_df = read.csv(file = prism_metadata, row.names = 1)
+#' mbx <- Macarron::prepInput(input_abundances = abundances_df,
 #'                             input_annotations = annotations_df,
 #'                             input_metadata = metadata_df)
 #' w <- Macarron::makeDisMat(se = mbx)
@@ -29,8 +29,8 @@
 #' @export
 
 makeDisMat <- function(se, 
-                       metadata_variable = NULL,
-                       min_prevalence=0.7,
+                       metadata_variable = 1,
+                       min_prevalence = 0.7,
                        execution_mode = "serial",
                        optimize.for = c("runtime", "memory"))
 {
@@ -41,39 +41,36 @@ makeDisMat <- function(se,
   mat <- DelayedArray::DelayedArray(SummarizedExperiment::assay(se))
   
   # Phenotype i.e. groups/conditions
-  if(is.null(metadata_variable)){
-    metadata_variable <- names(SummarizedExperiment::colData(se))[1]
-    message(paste0("Metadata chosen for prevalence filtering: ",metadata_variable))
-  }else{
+  if(is.character(metadata_variable)){
     metadata_variable <- metadata_variable
-    message(paste0("Metadata chosen for prevalence filtering: ",metadata_variable))
+  }else{
+    metadata_variable <- names(SummarizedExperiment::colData(se))[metadata_variable]
   }
-  grps <- unique(se[[metadata_variable]])
+  phenotypes <- unique(se[[metadata_variable]])
   
   # Function: Get features that satisfy prevalence threshold in each condition
-  .getIds <- function(g)
+  .getIds <- function(phenotype)
   {
-    ind <- se[[metadata_variable]] == g
+    ind <- se[[metadata_variable]] == phenotype
     smat <- mat[,ind]
     ind <- DelayedArray::rowMeans(is.na(smat)) <= 1 - min_prevalence
     ind
   }
   
   # Apply on all groups/conditions
-  ind <- vapply(grps, .getIds, logical(nrow(mat)))
+  ind <- vapply(phenotypes, .getIds, logical(nrow(mat)))
   
   # Union of features
   ind <- apply(ind,1,any)
   mat <- mat[ind,]
-  message(paste0(nrow(mat), " features are selected."))
-  
+  message(paste0(nrow(mat), " features pass chosen minimum prevalence threshold of ", min_prevalence, "."))
   
   # Compute correlation and distance matrices
   if(nrow(mat) <= 25000){
-    .getCorMat <- function(g)
+    .getCorMat <- function(phenotype)
     {
-      message(g)
-      inx <- se[[metadata_variable]] == g
+      message(paste0("Calculating pairwise correlations in phenotype: ", phenotype))
+      inx <- se[[metadata_variable]] == phenotype
       ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=min_prevalence
       gmat <- mat[ind,inx]
       tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
@@ -90,22 +87,19 @@ makeDisMat <- function(se,
       if(opt.mem) cmat <- as(cmat, "dsyMatrix")
       cmat
     }
-    
     if(execution_mode == "serial"){
       exe.choice <- BiocParallel::SerialParam()
     }else if(execution_mode == "multi"){
       exe.choice <- BiocParallel::MulticoreParam()
     }
-    
     # Apply on all groups/conditions
-    cmats <- BiocParallel::bplapply(grps, .getCorMat, BPPARAM = exe.choice)
-    
+    cmats <- BiocParallel::bplapply(phenotypes, .getCorMat, BPPARAM = exe.choice)
     # Keep the best observed positive correlation for each pair of features
     mmat <- do.call(pmax, c(cmats, na.rm=TRUE))
     }else{
-      for (g in grps){
-        message(g)
-        inx <- se[[metadata_variable]] == g
+      for (phenotype in phenotypes){
+        message(paste0("Calculating pairwise correlations in phenotype: ", phenotype))
+        inx <- se[[metadata_variable]] == phenotype
         ind <- DelayedArray::rowMeans(!is.na(mat[,inx]))>=min_prevalence
         gmat <- mat[ind,inx]
         tmp <- matrix(as.numeric(), nrow=nrow(mat),ncol=ncol(gmat))
@@ -119,23 +113,20 @@ makeDisMat <- function(se,
         options(warn=0)
         cmat[is.na(cmat)] <- 0
         cmat[cmat < 0] <- 0
-        message(paste0(g," cmat created"))
-        assign(paste0(g,"_ff"),ff::as.ff(cmat))
-        message(paste0(g,"_ff created"))
+        assign(paste0(phenotype,"_ff"),ff::as.ff(cmat))
         rm(cmat)
        }
-    
     # Keep the best observed positive correlation for each pair of features
     mmat <- matrix(0, nrow=nrow(mat), ncol=nrow(mat))
     for(j in ls(pattern="_ff")){
       for(k in 1:nrow(mmat)){
         mmat[,k] <- pmax(mmat[,k],get(j)[,k],na.rm=TRUE)
         }
-      message(paste0(j," compared"))
     }
     rownames(mmat) <- rownames(mat)
     colnames(mmat) <- rownames(mat)
     }
+  
   # Beta-scaling
   mmat = mmat^3 
     

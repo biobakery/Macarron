@@ -7,7 +7,7 @@
 calQval(
   se,
   mod.assn,
-  metadata_variable = NULL,
+  metadata_variable = 1,
   fixed_effects = NULL,
   random_effects = NULL,
   reference = NULL,
@@ -19,18 +19,18 @@ calQval(
 )
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using MACARRoN::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::prepInput().}
 
-\item{mod.assn}{the output of MACARRoN::findMacMod().}
+\item{mod.assn}{the output of Macarron::findMacMod().}
 
-\item{metadata_variable}{metadata of interest. Default: Column 2 of metadata table. 
+\item{metadata_variable}{name or index of metadata column identifying phenotypes/conditions to be used for differential abundance testing. Default: Column 1 of metadata dataframe 
 Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.}
 
 \item{fixed_effects}{fixed effects, comma delimited e.g. c("metadata1","metadata2"). Default: all columns in metadata.}
 
 \item{random_effects}{random effects, comma delimited. Default: NULL.}
 
-\item{reference}{a reference level/group in each metadata, comma delimited e.g. c("metadata1,ref1","metadata2,ref2"). 
+\item{reference}{a reference level/group in each metadata column with more than 3 levels, semi-colon delimited for multiple variables e.g. c("metadata1,ref1";"metadata2,ref2"). 
 Default: alphabetically first phenotype/condition will be used as reference. 
 Note: Reference must be specified for metadata with more than 2 levels.}
 
@@ -59,10 +59,10 @@ abundances_df = read.csv(file = prism_abundances, row.names = 1)
 prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 annotations_df = read.csv(file = prism_annotations, row.names = 1)
 prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-metadata_df = read.csv(file = prism_metadata)
+metadata_df = read.csv(file = prism_metadata, row.names = 1)
 met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 taxonomy_df = read.csv(file = met_taxonomy)
-mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+mbx <- Macarron::prepInput(input_abundances = abundances_df,
                             input_annotations = annotations_df,
                             input_metadata = metadata_df)
 w <- Macarron::makeDisMat(se = mbx)

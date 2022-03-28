@@ -4,17 +4,17 @@
 \alias{calAVA}
 \title{Calculate abundance versus anchor (AVA) of metabolic features.}
 \usage{
-calAVA(se, mod.assn, metadata_variable = NULL, anchor_annotation = NULL)
+calAVA(se, mod.assn, metadata_variable = 1, anchor_annotation = 2)
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using MACARRoN::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::prepInput().}
 
-\item{mod.assn}{the output of MACARRoN::findMacMod().}
+\item{mod.assn}{the output of Macarron::findMacMod().}
 
-\item{metadata_variable}{metadata of interest. Default: Column 2 of metadata table.}
+\item{metadata_variable}{name or index of metadata column identifying phenotypes/conditions to be used for evaluating AVA. Default: Column 1 of metadata dataframe. 
+Note: metadata_variable must be consistent across distance matrix, ava, q-value and effect-size calculations.}
 
-\item{anchor_annotation}{anchor identification. Default: column 2 of annotation dataframe.
-Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.}
+\item{anchor_annotation}{name or index of column containing common names of the annotated metabolite. Default: Column 2 of annotation dataframe.}
 }
 \value{
 mac.ava abundance versus anchor values of metabolic features
@@ -22,8 +22,8 @@ mac.ava abundance versus anchor values of metabolic features
 \description{
 AVA of a feature is the ratio of its abundance and the most abundant metabolite in the same module 
 i.e. the "anchor". Anchor is an annotated/known feature if available or just the most abundant metabolic
-feature. For every feature, mean abundance in each phenotype or condition is calculated and the maximum is considered
-for AVA calculation. Singletons are assigned an AVA of 1.
+feature. For every feature, mean abundance in each phenotype or condition is calculated and the maximum is 
+considered for AVA calculation. Singletons are assigned an AVA of 1.
 }
 \examples{
 prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
@@ -31,10 +31,10 @@ abundances_df = read.csv(file = prism_abundances, row.names = 1)
 prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 annotations_df = read.csv(file = prism_annotations, row.names = 1)
 prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-metadata_df = read.csv(file = prism_metadata)
+metadata_df = read.csv(file = prism_metadata, row.names = 1)
 met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 taxonomy_df = read.csv(file = met_taxonomy)
-mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+mbx <- Macarron::prepInput(input_abundances = abundances_df,
                             input_annotations = annotations_df,
                             input_metadata = metadata_df)
 w <- Macarron::makeDisMat(se = mbx)

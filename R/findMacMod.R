@@ -1,16 +1,16 @@
 #' Cluster metabolic features based on covarying abundances into modules
 #' 
-#' @param se SummarizedExperiment object created using Macarron::makeSumExp().
+#' @param se SummarizedExperiment object created using Macarron::prepInput().
 #' @param w distance matrix from function Macarron::makeDisMat().
 #' @param input_taxonomy chemical taxonomy file with 3 columns specifying annotation, subclass and class of annotated features. 
 #' Can be created using the decorateID.R utility of Macarron. 
 #' Annotation specified with "standard_identifier" and annotation in the first column of the chemical taxonomy file must match.
-#' @param standard_identifier HMDB ID or Pubchem CID. Default: Column 1 in annotation table.
+#' @param standard_identifier name or index of column containing HMDB or PubChem IDs. Default: Column 1 in annotation dataframe.
 #' @param min_module_size minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
 #' Default is cube root of number of prevalent features.
 #' @param evaluateMOS examine measure of success for modules identified using min_module_size, min_module_size + 5, min_module_size + 10, min_module_size - 5, min_module_size - 10
 #' 
-#' @return mod.assn metabolic features clustered into "modules" based on covarying abundances
+#' @return mod.assn metabolic features clustered into "modules" based on covarying abundances and measures of success.
 #' 
 #' @examples 
 #' prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
@@ -18,10 +18,10 @@
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 #' annotations_df = read.csv(file = prism_annotations, row.names = 1)
 #' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-#' metadata_df = read.csv(file = prism_metadata)
+#' metadata_df = read.csv(file = prism_metadata, row.names = 1)
 #' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 #' taxonomy_df = read.csv(file = met_taxonomy)
-#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#' mbx <- Macarron::prepInput(input_abundances = abundances_df,
 #'                             input_annotations = annotations_df,
 #'                             input_metadata = metadata_df)
 #' w <- Macarron::makeDisMat(se = mbx)
@@ -35,8 +35,8 @@
 
 findMacMod <- function(se, 
                         w, 
-                        input_taxonomy = NULL,
-                        standard_identifier = NULL,
+                        input_taxonomy,
+                        standard_identifier = 1,
                         min_module_size = NULL,
                         evaluateMOS = TRUE)
 {
@@ -53,17 +53,18 @@ findMacMod <- function(se,
   
   # Module assignments
   anno <- as.data.frame(SummarizedExperiment::rowData(se))
-  if(is.null(standard_identifier)){
-    mod.assn <- as.data.frame(anno[colnames(w),1])
-  }else{
-    mod.assn <- as.data.frame(anno[colnames(w),standard_identifier])
-  }
+  mod.assn <- as.data.frame(anno[colnames(w),standard_identifier])
   rownames(mod.assn) <- colnames(w)
+  if(is.character(standard_identifier)){
+    names(mod.assn) <- standard_identifier
+  }else{
+    names(mod.assn) <- names(anno[standard_identifier])
+  }
   
   #-------------------------------------
   # Measures of success
   #-------------------------------------
-  if(isTRUE(evaluateMOS)){
+  if(evaluateMOS){
     
     message("Evaluating measures of success")
     
@@ -158,7 +159,7 @@ findMacMod <- function(se,
       fham <- rbind(fham, perc.feats)
     }
     
-    # Writing results to file
+    # Combining all measures of success
     mac.mos <- data.frame(cbind(min_module_size.list, totc, sing, pann, hscc, maxc, perc, maxs, pers, fham))
     rownames(mac.mos) <- NULL
     colnames(mac.mos) <- c("Minimum module size (min_module_size)",
@@ -171,8 +172,8 @@ findMacMod <- function(se,
                            "Max subclasses per module",
                            "90p subclasses per module",
                            "% Features in HAM")
-                      
-    write.csv(mac.mos, file="MAC_modules_measures_of_success.csv")
+  }else{
+    mac.mos <- "Measures of success not evaluated."
   }
   
   #-------------------------------------
@@ -183,12 +184,7 @@ findMacMod <- function(se,
                                                           deepSplit = TRUE, 
                                                           pamRespectsDendro = TRUE,
                                                           minClusterSize = min_module_size))
-  if(is.null(standard_identifier)){
-    colnames(mod.assn) <- c(names(anno)[1],"module")
-  }else{
-    colnames(mod.assn) <- c(standard_identifier,"module")
-  }
-  
+  names(mod.assn)[2] <- "module"
   ann.mod <- unique(mod.assn[which(mod.assn[,1] != ""),2])
   ann.mod <- ann.mod[which(ann.mod > 0)]
   ann.mod <- as.data.frame(ann.mod)
@@ -208,6 +204,7 @@ findMacMod <- function(se,
   mod.assn$classes <- as.character(sapply(mod.assn$module, function(m) ann.mod[which(ann.mod$module == m),2]))
   mod.assn[mod.assn == "character(0)"] <- ""
   mod.assn$classes <- gsub(",",";",mod.assn$classes)
+  mod.assn <- list(mod.assn,mac.mos)
   mod.assn
 }
 

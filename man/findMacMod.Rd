@@ -7,14 +7,14 @@
 findMacMod(
   se,
   w,
-  input_taxonomy = NULL,
-  standard_identifier = NULL,
+  input_taxonomy,
+  standard_identifier = 1,
   min_module_size = NULL,
   evaluateMOS = TRUE
 )
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using Macarron::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::prepInput().}
 
 \item{w}{distance matrix from function Macarron::makeDisMat().}
 
@@ -22,7 +22,7 @@ findMacMod(
 Can be created using the decorateID.R utility of Macarron. 
 Annotation specified with "standard_identifier" and annotation in the first column of the chemical taxonomy file must match.}
 
-\item{standard_identifier}{HMDB ID or Pubchem CID. Default: Column 1 in annotation table.}
+\item{standard_identifier}{name or index of column containing HMDB or PubChem IDs. Default: Column 1 in annotation dataframe.}
 
 \item{min_module_size}{minimum module size to be used for module identification with dynamicTreeCut::cutreeDynamic(). 
 Default is cube root of number of prevalent features.}
@@ -30,7 +30,7 @@ Default is cube root of number of prevalent features.}
 \item{evaluateMOS}{examine measure of success for modules identified using min_module_size, min_module_size + 5, min_module_size + 10, min_module_size - 5, min_module_size - 10}
 }
 \value{
-mod.assn metabolic features clustered into "modules" based on covarying abundances
+mod.assn metabolic features clustered into "modules" based on covarying abundances and measures of success.
 }
 \description{
 Cluster metabolic features based on covarying abundances into modules
@@ -41,10 +41,10 @@ abundances_df = read.csv(file = prism_abundances, row.names = 1)
 prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 annotations_df = read.csv(file = prism_annotations, row.names = 1)
 prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-metadata_df = read.csv(file = prism_metadata)
+metadata_df = read.csv(file = prism_metadata, row.names = 1)
 met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 taxonomy_df = read.csv(file = met_taxonomy)
-mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+mbx <- Macarron::prepInput(input_abundances = abundances_df,
                             input_annotations = annotations_df,
                             input_metadata = metadata_df)
 w <- Macarron::makeDisMat(se = mbx)

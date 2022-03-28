@@ -5,13 +5,13 @@
 #' Default analysis method is "LM". Can be run on multiple cores.
 #' metadata_variable and ref (reference group) should be the same as the one specified for effect size calculation.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
-#' @param mod.assn the output of MACARRoN::findMacMod().
-#' @param metadata_variable metadata of interest. Default: Column 2 of metadata table. 
+#' @param se SummarizedExperiment object created using Macarron::prepInput().
+#' @param mod.assn the output of Macarron::findMacMod().
+#' @param metadata_variable name or index of metadata column identifying phenotypes/conditions to be used for differential abundance testing. Default: Column 1 of metadata dataframe 
 #' Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.
 #' @param fixed_effects fixed effects, comma delimited e.g. c("metadata1","metadata2"). Default: all columns in metadata.
 #' @param random_effects random effects, comma delimited. Default: NULL.
-#' @param reference a reference level/group in each metadata, comma delimited e.g. c("metadata1,ref1","metadata2,ref2"). 
+#' @param reference a reference level/group in each metadata column with more than 3 levels, semi-colon delimited for multiple variables e.g. c("metadata1,ref1";"metadata2,ref2"). 
 #' Default: alphabetically first phenotype/condition will be used as reference. 
 #' Note: Reference must be specified for metadata with more than 2 levels.
 #' @param output_folder the name of the output folder where all MaAsLin2 results will be written. Default: maaslin2_output
@@ -27,10 +27,10 @@
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 #' annotations_df = read.csv(file = prism_annotations, row.names = 1)
 #' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-#' metadata_df = read.csv(file = prism_metadata)
+#' metadata_df = read.csv(file = prism_metadata, row.names = 1)
 #' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 #' taxonomy_df = read.csv(file = met_taxonomy)
-#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#' mbx <- Macarron::prepInput(input_abundances = abundances_df,
 #'                             input_annotations = annotations_df,
 #'                             input_metadata = metadata_df)
 #' w <- Macarron::makeDisMat(se = mbx)
@@ -45,7 +45,7 @@
 
 calQval <- function(se, 
                     mod.assn, 
-                    metadata_variable = NULL,
+                    metadata_variable = 1,
                     fixed_effects = NULL, 
                     random_effects = NULL,
                     reference = NULL,
@@ -56,7 +56,7 @@ calQval <- function(se,
                     heatmap_first_n = 50
                     )
   {
-  mod.assn <- as.data.frame(mod.assn)
+  mod.assn <- as.data.frame(mod.assn[[1]])
   fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[rownames(mod.assn),]
   fint[is.na(fint)] <- 0
@@ -89,10 +89,10 @@ calQval <- function(se,
                        heatmap_first_n = heatmap_first_n)
   
   # Adjusting p-values
-  if(is.null(metadata_variable)){
-    metadata_variable <- names(SummarizedExperiment::colData(se))[1]
+  if(is.character(metadata_variable)){
+    metadata_variable <- metadata_variable
   }else{
-    metadata_variable = metadata_variable
+    metadata_variable <- names(SummarizedExperiment::colData(se))[metadata_variable]
   }
   qval <- as.data.frame(fit.data$results[which(fit.data$results$metadata == metadata_variable),
                                               c("feature","metadata","value","coef","pval")])

@@ -4,7 +4,7 @@
 #' test and control (reference) samples. For the specified metadata variable, effect size 
 #' is calculated for all test categories against the reference category.
 #' 
-#' @param se SummarizedExperiment object created using Macarron::makeSumExp().
+#' @param se SummarizedExperiment object created using Macarron::prepInput().
 #' @param mac.qval the output of Macarron::calQval().
 #' @return mac.es effect sizes of metabolic features in phenotypes of interest.
 #' 
@@ -14,10 +14,10 @@
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 #' annotations_df = read.csv(file = prism_annotations, row.names = 1)
 #' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-#' metadata_df = read.csv(file = prism_metadata)
+#' metadata_df = read.csv(file = prism_metadata, row.names = 1)
 #' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 #' taxonomy_df = read.csv(file = met_taxonomy)
-#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#' mbx <- Macarron::prepInput(input_abundances = abundances_df,
 #'                             input_annotations = annotations_df,
 #'                             input_metadata = metadata_df)
 #' w <- Macarron::makeDisMat(se = mbx)
@@ -42,27 +42,27 @@ calES <- function(se,
   fint <- t(fint)
   
   # Get phenotype from mac.qval
-  ptype <- unique(mac.qval$metadata)
-  grps <- unique(se[[ptype]])
+  metadata_variable <- unique(mac.qval$metadata)
+  phenotypes <- unique(se[[metadata_variable]])
   
-  # Mean abundance of feature in each group of ptype
+  # Mean abundance of feature in each group of metadata_variable
   get.mean <- function(g){
     message(paste0("Calculating mean abundance in: ",g))
-    ind <- se[[ptype]] == g
+    ind <- se[[metadata_variable]] == g
     m <- sapply(colnames(fint), function(f) mean(fint[ind,f]))
   }
-  all.means <- as.data.frame(do.call(cbind, lapply(grps, get.mean)))
-  colnames(all.means) <- grps
+  all.means <- as.data.frame(do.call(cbind, lapply(phenotypes, get.mean)))
+  colnames(all.means) <- phenotypes
   
   # Effect size
-  test.grps <- unique(mac.qval$value)
-  ref.grp <- setdiff(grps, test.grps)
-  get.es <- function(tg){
-    message(paste0("Calculating effect size in: ",tg))
-    es <- all.means[,tg]- all.means[,ref.grp]
+  test.phenotypes <- unique(mac.qval$value)
+  ref.phenotype <- setdiff(phenotypes, test.phenotypes)
+  get.es <- function(test.phenotype){
+    message(paste0("Calculating effect size in: ",test.phenotype))
+    es <- all.means[,test.phenotype]- all.means[,ref.phenotype]
   }
-  mac.es <- as.data.frame(do.call(cbind, lapply(test.grps, get.es)))
-  colnames(mac.es) <- test.grps
+  mac.es <- as.data.frame(do.call(cbind, lapply(test.phenotypes, get.es)))
+  colnames(mac.es) <- test.phenotypes
   rownames(mac.es) <- colnames(fint)
   mac.es
 }

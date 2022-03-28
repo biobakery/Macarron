@@ -1,106 +1,170 @@
 ---
-title: "MACARRoN"
-date: "Monday, Jan 10, 2022"
+title: "Macarron User Manual"
 author:
- - name: Amrisha Bhosle
-   email: abhosle@broadinstitute.org
- - name: Ludwig Geistlinger
-   email: Ludwig_Geistlinger@hms.harvard.edu
- - name: Sagun Maharjan
-   email: sagunmaharjann@gmail.com
-output: html_document
+- name: Amrisha Bhosle
+  email: abhosle@broadinstitute.org
+- name: Ludwig Geistlinger
+  email: ludwig_geistlinger@hms.harvard.edu
+- name: Sagun Maharjan
+  email: sagunmaharjann@gmail.com
+output: 
+    BiocStyle::html_document:
+      toc: true
+      toc_float: true
 vignette: >
     %\VignetteIndexEntry{Macarron}
-    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
 ---
 
-## Macarron User Manual ##  
+# Abstract
   
-MACARRoN (Metabolome Analysis and Combined Annotation Ranks for pRediction
-  of Novel bioactives) is a workflow to systematically identify and prioritize
-  potentially bioactive (and often unannotated) small molecules in microbial 
-  community metabolomic datasets. It prioritizes metabolic features as 
-  "potentially bioactive" using a combination of covariance with standard
-  i.e. annotated compounds, ecological properties such as prevalence and 
-  relative abundance and association with environmental parameters or phenotypes.
-
-If you use the Macarron software, please cite our manuscript: 
+[Macarron](https://huttenhower.sph.harvard.edu/macarron/) is a workflow to systematically annotate and prioritize potentially bioactive (and often unannotated) small molecules in microbial community metabolomic datasets. Macarron prioritizes metabolic features as potentially bioactive in a phenotype/condition of interest using a combination of (a) covariance with annotated metabolites, (b) ecological properties such as abundance with respect to covarying annotated compounds, and (c) differential abundance in the phenotype/condition of interest.
 
 If you have questions, please direct it to:
 [Macarron Forum](https://forum.biobakery.org/c/microbial-community-profiling/Macarron)
 
----
-   
-## Contents ##
-* [Description](#description)
-* [Requirements](#requirements)
-* [Installation](#installation)
+# Installation
 
+Macarron requires R version 4.2.0 or higher. Install Bioconductor and then install Macarron:
 
-## Description ## 
-
-Macarron (Metabolome Analysis and Combined Annotation Ranks for pRediction of Novel bioactives)
-  is a workflow to systematically identify and prioritize potentially bioactive (and often unannotated)
-  small molecules in microbial community metabolomic datasets.
-
-## Requirements ## 
-
-Macarron is an R package that can be run as a set of R functions or via a command line wrapper.
-
-
-## Installation ##
-
-If only running from the command line, you do not need to install the Macarron package but you will 
-need to install the Macarron dependencies.
-
-### From the command line ###
-1. Install the Bioconductor dependencies: SummarizedExperiment, BiocParallel, DelayedArray, Maaslin2 
-and ComplexHeatmap.
-2. Install the CRAN dependencies:
-    * ``$ R -q -e "install.packages(c('optparse','logging','data.table','WGCNA','ff','ffbase',
-    'dynamicTreeCut','plyr','psych','ggplot2','circlize','grDevices','xml2','RCurl','RJSONIO'), repos='http://cran.r-project.org')"``
-
-### From R ###
-
-To install the latest version of Macarron:
-
-``
+```{r, eval=FALSE}
 if(!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("Macarron")
-``
+```
 
-To install the latest development version of Macarron:
+# Running Macarron
 
-``
-install.packages("devtools")
-library("devtools")
-install_github("biobakery/Macarron")
-``
+Macarron can be run from the command line or as an R function. Both methods require the same
+arguments, have the same options, and use the same default settings. The package includes the
+wrapper `Macarron()` as well as functions which perform different steps in the Macarron
+framework.
 
-## Run a demo ##
+## Input CSV files
+Macarron requires 4 comma-separated, appropriately formatted input files. The files and their 
+formatting constraints are described below.
 
-#### In R ####
+1. Metabolic features abundances
+    * Must contain features in rows and samples in columns.
+    * First column must identify features.
+2. Metabolic features annotations
+    * Must contain features in rows and annotations in columns.
+    * First column must identify features.
+    * Second column must contain either HMDB ID or PubChem Compound Identifier (CID).
+    * Third column must contain the name of the metabolite.
+    * Fourth column must contain a continuous chemical property such as m/z or RT or shift/ppm.
+    * Other annotations such as RT, m/z or other identifiers can be listed column 4 onward.
+3. Sample metadata
+    * Must contain samples in rows and metadata in columns.
+    * First column must identify samples.
+    * Second column must contain categorical metadata relevant to prioritization such as phenotypes, exposures or environments.
+4. Chemical taxonomy
+    * First column must contain the HMDB ID or PubChem CID. IDs must be consistent between annotation and taxonomy files.
+    * Second and third columns must contain chemical subclass and class of the respective metabolite.
+    
+If you do not have the chemical taxonomy file, you can generate this file using the annotation dataframe and Macarron utility `decorate_ID` (see Advanced Topics).
+
+## Output Files 
+By default, all files will be stored in a folder named Macarron_output inside the current working directory. The main prioritization results are stored in ``prioritized_metabolites_all.csv``. Another file, ``prioritized_metabolites_characterizable.csv`` is a subset of ``prioritized_metabolites_all.csv`` and only contains metabolic features which covary with at least one annotated metabolite.
+The columns in these output files are:
+
+- Feature_index: Lists the identifier of the metabolic feature found in column 1 of abundance and annotation files.
+- HMDB_ID (or PubChem ID): Public database identifier from column 2 of annotation file (column 1 of annotation dataframe).
+- Metabolite name: From column 2 of annotation dataframe.
+- mz: The continuous numerical chemical property from column 3 of the annotation dataframe.
+- Priority_score: 1 indicates most prioritized. It is the percentile from the meta-rank of AVA, q-value and effect size.
+- Status: Direction of perturbation (differential abundance) in the phenotype (or environment) of interest compared to reference phenotype.
+- Module: ID of the covariance module a metabolic feature is a member of. Module = 0 indicates a singleton i.e., a metabolic feature that is not assigned to any module.
+- Anchor (of a module): Metabolic feature that has the highest abundance in any phenotype. 
+- Related_classes: Chemical taxonomy of the annotated features that covary with a metabolic feature.
+- Covaries_with_standard: 1 (yes) and 0 (no). Column specifies if the metabolic feature covaries with at least one annotated (standard) metabolite.
+- AVA: Abundance versus anchor which is a ratio of the highest abundance (in any phenotype) of a metabolic feature and highest abundance of the covarying anchor. Naturally, the AVA of an anchor metabolite is 1.
+- qvalue: Estimated from multivariate linear model using `Maaslin2`.
+- effect_size
+- Remaining columns from the annotation dataframe are appended.
+
+## Run a demo in R
+
+### Using CSV files as inputs
+Example (demo) input files can be found under ``inst/extdata`` folder of the `Macarron` source. These files were generated from the [PRISM](https://pubmed.ncbi.nlm.nih.gov/30531976/) study of stool metabolomes of individuals with inflammatory bowel disease (IBD) and healthy "Control" individuals. Control and IBD are the two phenotypes in this example. Macarron will be applied to prioritize metabolic features with respect to their bioactivity in IBD. Therefore, in this example, the phenotype of interest is "IBD" and the reference phenotype is "Control". The four input files are ``demo_abundances.csv``, ``demo_annotations.csv``, ``demo_metadata.csv``, and ``demo_taxonomy.csv``. 
 
 ```{r}
 library(Macarron)
-input_abundances <- system.file(
+prism_abundances <- system.file(
     'extdata','demo_abundances.csv', package="Macarron")
-input_annotations <-system.file(
+prism_annotations <-system.file(
     'extdata','demo_annotations.csv', package="Macarron")
-input_metadata <-system.file(
+prism_metadata <-system.file(
     'extdata','demo_metadata.csv', package="Macarron")
-input_taxonomy <-system.file(
+mets_taxonomy <-system.file(
     'extdata','demo_taxonomy.csv', package="Macarron")
-mets.prioritized <- Macarron::MACARRoN(input_abundances, 
-                                       input_annotations, 
-                                       input_metadata, 
-                                       input_taxonomy)
+prism_prioritized <- Macarron::Macarron(input_abundances = prism_abundances,
+                                        input_annotations = prism_annotations,
+                                        input_metadata = prism_metadata,
+                                        input_taxonomy = mets_taxonomy)
 ```
 
+### Using dataframes as inputs
+```{r, eval=FALSE}
+abundances_df = read.csv(file = prism_abundances, row.names = 1) # setting features as rownames
+annotations_df = read.csv(file = prism_annotations, row.names = 1) # setting features as rownames
+metadata_df = read.csv(file = prism_metadata, row.names = 1) # setting samples as rownames 
+taxonomy_df = read.csv(file = mets_taxonomy)
 
-##### Session Info #####
+# Running Macarron
+prism_prioritized <- Macarron::Macarron(input_abundances = abundances_df,
+                                        input_annotations = annotations_df,
+                                        input_metadata = metadata_df,
+                                        input_taxonomy = taxonomy_df)
+```
+
+### Running Macarron as individual functions
+The `Macarron::Macarron()` function is a wrapper for the Macarron framework. Users can also apply individual functions on the input dataframes to achieve same results as the wrapper with the added benefit of storing output from each function for other analyses. There are seven steps:
+```{r,eval = FALSE}
+# Step 1: Storing input data in a summarized experiment object
+prism_mbx <- prepInput(input_abundances = abundances_df,
+                       input_annotations = annotations_df,
+                       input_metadata = metadata_df)
+
+# Step 2: Creating a distance matrix from pairwise correlations in abundances of metabolic features
+prism_w <- makeDisMat(se = prism_mbx)
+
+# Step 3: Finding covariance modules
+prism_modules <- findMacMod(se = prism_mbx,
+                            w = prism_w,
+                            input_taxonomy = taxonomy_df)
+# The output is a list containing two dataframes- module assignments and measures of success
+# if evaluateMOS=TRUE. To write modules to a separate dataframe, do:
+prism_module_assignments <- prism_modules[[1]]
+prism_modules_mos <- prism_modules[[2]]
+
+# Step 4: Calculating AVA
+prism_ava <- calAVA(se = prism_mbx,
+                    mod.assn = prism_modules)
+
+# Step 5: Calculating q-value
+prism_qval <- calQval(se = prism_mbx,
+                      mod.assn = prism_modules)
+
+# Step 6: Calculating effect size
+prism_es <- calES(se = prism_mbx,
+                   mac.qval = prism_qval)
+
+# Step 7: Prioritizing metabolic features
+prism_prioritized <- prioritize(se = prism_mbx,
+                                mod.assn = prism_modules,
+                                mac.ava = prism_ava,
+                                mac.qval = prism_qval,
+                                mac.es = prism_es)
+# The output is a list containing two dataframes- all prioritized metabolic features and
+# only characterizable metabolic features.
+all_prioritized <- prism_prioritized[[1]]
+char_prioritized <- prism_prioritized[[2]]
+
+# Step 8 (optional): View only the highly prioritized metabolic features in each module
+prism_highly_prioritized <- showBest(prism_prioritized)
+```
 
 Session info from running the demo in R can be displayed with the following command.
 
@@ -108,49 +172,78 @@ Session info from running the demo in R can be displayed with the following comm
 sessionInfo()
 ```
 
-### Options
+## Advanced Topics
+
+### Generating the input chemical taxonomy file
+The input taxonomy dataframe can be generated using the input metabolic features annotation dataframe using `Macarron::decorateID()`. This function annotates an HMDB ID or a PubChem CID with the chemical class and subclass of the metabolite.
+```{r, eval=FALSE}
+taxonomy_df <- decorateID(input_annotations = annotations_df)
+write.csv(taxonomy_df, file="demo_taxonomy.csv", row.names = FALSE)
 ```
-Usage: ./Macarron.R [Inputs]
- <feature_abundances.csv>
- <feature_annotations.csv>
- <sample_metadata.csv>
- <chemical_taxonomy.csv> 
 
+### Accessory output files
+#### Macarron.log
+A record of all chosen parameters and steps that were followed during execution.
 
-Options:
-    -h, --help
-        Show this help message and exit
+#### modules_measures_of_success.csv
 
-    -o OUTPUT, --output=OUTPUT
-        Output folder name [Default: Macarron_output]
+This file provides information about the properties of covariance modules used in the analysis. By default, modules are generated using a minimum module size (MMS) (argument: `min_module_size`) equal to cube root of the total number of prevalent metabolic features. Macarron evaluates 9 measures of success (MOS) that collectively capture the "correctness" and chemical homogeneity of the modules. The MOS are as follows:
 
-    -p METADATA_VARIABLE, --metadata_variable=METADATA_VARIABLE
-        Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors) [Default: Second column of metadata table]
+- Total modules: Number of modules.
+- Singletons: Number of metabolic features that were not assigned to any module at MMS.
+- % Annotated modules: Percentage of modules that contained at least one annotated metabolic feature.
+- % Consistent assignments: Percentage of times the same metabolic feature was assigned to the same module e.g. if three metabolic features represent glucose, they should all be in the same module. This percentage must be high.
+- Max classes per module: The highest number of chemical classes observed in any module. This is evaluated using the chemical taxonomy of covarying annotated features.
+- 90p classes per module: 90th percentile of classes per module; captures the chemical homogeneity of the modules.
+- Max subclasses per module: The highest number of chemical subclasses observed in any module.
+- 90p subclasses per module: 90th percentile of subclasses per module; captures the chemical homogeneity of the modules.
+- % Features in HAM: Macarron first finds homogeneously annoted modules (HAMs): These are modules in which >75% annotated features have the same chemical class indicating that they are chemically homogeneous. It then calculates how many features the HAMs account for.
 
-    -p MIN_PREVALENCE, --min_prevalence=MIN_PREVALENCE
-        Minimum percent of samples of each condition in <metadata variable> in which metabolic feature is recorded [Default: 0.7]
+#### Maaslin2 results
+This folder contains the Maaslin2 log file (maaslin2.log), significant associations found by Maaslin2 (significant_results.tsv) and the linear model residuals file (residuals.rds). For more information, see Maaslin2.
 
-    -e EXECUTION_MODE, --execution_mode=EXECUTION_MODE
-        BiocParallel Class for execution [Default: serial] [Choices:serial, multi]
+### Changing defaults
+#### Filtering metabolic features based on prevalence
+Ideally, at least 50% metabolic features must be retained after prevalence filtering. By default, Macarron uses the union of metabolic features observed (non-zero abundance) in at least 70% samples of any phenotype for further analysis. This prevalence threshold may be high for some metabolomics datasets and can be changed using the `min_prevalence` argument.
+```{r, eval=FALSE}
+prism_prioritized <- Macarron::Macarron(input_abundances = abundances_df,
+                                        input_annotations = annotations_df,
+                                        input_metadata = metadata_df,
+                                        input_taxonomy = taxonomy_df,
+                                        min_prevalence = 0.5)
+# or
+prism_w <- makeDisMat(se = prism_mbx,
+                      min_prevalence = 0.5)
+```                                        
 
-    -k STANDARD_IDENTIFIER, --standard_identifier=STANDARD_IDENTIFIER
-        Annotation such as HMDB/METLIN/PubChem ID for an annotated metabolite feature [Default: Second column of annotation table]
+### Minimum module size
+By default, cube root of the total number of prevalent features is used as the minimum module size (MMS) (argument: `min_module_size`) for module detection and generation. We expect this to work for most real world datasets. To determine if the modules are optimal for further analysis, Macarron evaluates several measures of success (MOS) as described above. In addition to evaluating MOS for modules generated using the default MMS, Macarron also evaluates MOS for MMS values that are larger (MMS+5, MMS+10) and smaller (MMS-5, MMS-10) than the default MMS. If you find that the MOS improve with larger or smaller MMS, you may change the default accordingly. For more details about module detection, please see `WGCNA` and `dynamicTreeCut`.
+```{r, eval=FALSE}
+# See MOS of modules generated using default
+prism_modules <- findMacMod(se = prism_mbx,
+                            w = prism_w,
+                            input_taxonomy = taxonomy_df)
+prism_modules_mos <- prism_modules[[2]]
+View(prism_modules_mos)
 
-    -m ANCHOR_ANNOTATION, --anchor_annotation=ANCHOR_ANNOTATION
-        Metabolite name for an annotated metabolite feature [Default: Third column of annotation table]
+# Change MMS
+prism_modules <- findMacMod(se = prism_mbx,
+                            w = prism_w,
+                            input_taxonomy = taxonomy_df,
+                            min_module_size = 10)
+```
 
-    -c MIN_MODULE_SIZE, --min_module_size=MIN_MODULE_SIZE
-        Minimum module size for module generation [Default: NULL (will be calculated by analyzing measures of success)]
+### Specifying fixed effects, random effects and reference
+Macarron uses Maaslin2 for determining the q-value of differential abundance in a phenotype of interest. For default execution, the phenotype of interest must be a category in column 1 of the metadata dataframe e.g. IBD in diagnosis in the demo. This is also the column that is picked by the `metadata_variable` argument for identifying the main phenotypes/conditions in any dataset (see Macarron.log file). Further, in the default execution, all columns in the metadata table are considered as fixed effects and the alphabetically first categorical variable in each covariate with two categories is considered as the reference. Maaslin2 requires reference categories to be explicitly defined for all categorical metadata with more than two categories.
+Defaults can be changed with the arguments `fixed_effects`, `random_effects` and `reference`. In the demo example, `fixed effects` and `reference` can be defined as follows:
+```{r, eval=FALSE}
+prism_qval <- calQval(se = prism_mbx,
+                      mod.assn = prism_modules,
+                      metadata_variable = "diagnosis",
+                      fixed_effects = c("diagnosis","age","antibiotics"),
+                      reference = c("diagnosis,Control";"antibiotics,No"))
+```
 
-    -f FIXED_EFFECTS, --fixed_effects=FIXED_EFFECTS
-        Maaslin2 parameter; Fixed effects for differential abundance linear model, comma-delimited for multiple effects [Default: all]
-
-    -r RANDOM_EFFECTS, --random_effects=RANDOM_EFFECTS
-        Maaslin2 parameter; Random effects for differential abundance linear model, comma-delimited for multiple effects [Default: none]
-
-    -d REFERENCE, --reference=REFERENCE
-        Maaslin2 parameter; The factor to use as a reference for a variable with more than two levels provided as a string of 'variable,reference' comma delimited for multiple variables [Default: Alphabetically first]
-
-    -n CORES, --cores=CORES
-        Maaslin2 parameter; The number of R processes to run in parallel [Default: 1]
-    ```
+# Command line invocation
+The package source contains a script `MacarronCMD.R` in `inst/scripts` to invoke Macarron in the command line using Rscript.
+The `inst/scripts` folder also contains a README file that comprehensively documents the usage of the script.

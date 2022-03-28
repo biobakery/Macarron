@@ -6,7 +6,7 @@
 #' Top-ranked features have good relative abundance, and are significantly perturbed 
 #' in the specified environment/phenotype.
 #' 
-#' @param se SummarizedExperiment object created using Macarron::makeSumExp()
+#' @param se SummarizedExperiment object created using Macarron::prepInput()
 #' @param mod.assn the output of Macarron::findMacMod()
 #' @param mac.ava the output of Macarron::calAVA()
 #' @param mac.qval the output of Macarron::calQval()
@@ -20,10 +20,10 @@
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 #' annotations_df = read.csv(file = prism_annotations, row.names = 1)
 #' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-#' metadata_df = read.csv(file = prism_metadata)
+#' metadata_df = read.csv(file = prism_metadata, row.names = 1)
 #' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 #' taxonomy_df = read.csv(file = met_taxonomy)
-#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#' mbx <- Macarron::prepInput(input_abundances = abundances_df,
 #'                             input_annotations = annotations_df,
 #'                             input_metadata = metadata_df)
 #' w <- Macarron::makeDisMat(se = mbx)
@@ -51,9 +51,9 @@ prioritize <- function(se,
                        mac.qval,
                        mac.es)
 {
-  
+  mod.assn <- as.data.frame(mod.assn[[1]])
   # Test phenotypes
-  test.grps <- unique(mac.qval$value)
+  test.phenotypes <- unique(mac.qval$value)
   
   # Prioritize for each phenotype
   prioritize.each <- function(p){
@@ -90,23 +90,25 @@ prioritize <- function(se,
     ranked.features$rank_percentile <- sapply(ranked.features$meta_rank, function(x) rank.perc(x))
     ranked.features <- as.data.frame(ranked.features)
   }
-  prioritized.features <- as.data.frame(do.call(rbind, lapply(test.grps, prioritize.each)))
+  prioritized.features <- as.data.frame(do.call(rbind, lapply(test.phenotypes, prioritize.each)))
   prioritized.features$module <- mod.assn[prioritized.features$feature,"module"]
   prioritized.features$anchor <- mac.ava[prioritized.features$feature,"anchor"]
   prioritized.features$module_composition <- mod.assn[prioritized.features$feature,"classes"]
   prioritized.features$characterizable <- 0
   prioritized.features[which(prioritized.features$anchor != ""),"characterizable"] <- "1"
-  anno <- as.data.frame(rowData(se))
+  anno <- as.data.frame(SummarizedExperiment::rowData(se))
   prioritized.features$annotation1 <- anno[prioritized.features$feature, 1]
   prioritized.features$annotation2 <- anno[prioritized.features$feature, 2]
+  prioritized.features$annotation3 <- anno[prioritized.features$feature, 3]
   prioritized.features$ava <- round(prioritized.features$ava, 4)
   prioritized.features$es <- round(prioritized.features$es, 4)
   prioritized.features$rank_percentile <- round(prioritized.features$rank_percentile, 4)
   
   # Final table of results
-  mac.result <- cbind(prioritized.features[,c("feature",
+  all.prioritized <- cbind(prioritized.features[,c("feature",
                                               "annotation1",
                                               "annotation2",
+                                              "annotation3",
                                               "rank_percentile",
                                               "status",
                                               "module",
@@ -116,11 +118,13 @@ prioritize <- function(se,
                                               "ava",
                                               "qval",
                                               "es")],
-                      anno[prioritized.features$feature, c(3:ncol(anno))])
-  mac.result$feature <- gsub("F","",mac.result$feature)
-  colnames(mac.result) <- c("Feature_index",
+                      anno[prioritized.features$feature, c(4:ncol(anno))])
+  all.prioritized$feature <- gsub("F","",all.prioritized$feature)
+  char.prioritized <- all.prioritized[which(all.prioritized$characterizable == 1),]
+  colnames(all.prioritized) <- c("Feature_index",
                             names(anno)[1],
                             names(anno)[2],
+                            names(anno)[3],
                             "Priority_score",
                             "Status",
                             "Module",
@@ -130,8 +134,8 @@ prioritize <- function(se,
                             "AVA",
                             "qvalue",
                             "effect_size",
-                            names(anno)[3:ncol(anno)])
-  write.csv(mac.result, file="prioritized_metabolites_all.csv")
-  write.csv(mac.result[which(mac.result$characterizable == 1),], file="prioritized_metabolites_characterizable.csv")
+                            names(anno)[4:ncol(anno)])
+  colnames(char.prioritized) <- names(all.prioritized)
+  mac.result <- list(all.prioritized, char.prioritized)
   mac.result
 }

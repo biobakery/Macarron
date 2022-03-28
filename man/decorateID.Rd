@@ -12,7 +12,7 @@ decorateID(input_annotations)
 the subset of identified/annotated metabolic features.}
 }
 \value{
-input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
+tax_df input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
 }
 \description{
 Create a chemical taxonomy table for annotated metabolic features.

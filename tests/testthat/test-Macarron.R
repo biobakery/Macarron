@@ -1,0 +1,20 @@
+library(testthat)
+library(Macarron)
+
+prism_abundances = system.file("extdata", "demo_abundances.csv", package="Macarron")
+abundances_df = read.csv(file = prism_abundances, row.names = 1)
+prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
+annotations_df = read.csv(file = prism_annotations, row.names = 1)
+prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
+metadata_df = read.csv(file = prism_metadata, row.names = 1)
+met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
+taxonomy_df = read.csv(file = met_taxonomy)
+
+prism_prioritized <- Macarron(abundances_df,
+                              annotations_df,
+                              metadata_df,
+                              taxonomy_df)
+expect_true(is.data.frame(prism_prioritized[[1]]))
+expect_true(is.data.frame(prism_prioritized[[2]]))
+expect_equal(ncol(prism_prioritized[[1]]), ncol(prism_prioritized[[2]]))
+expect_equal(ncol(prism_prioritized[[1]]), ncol(annotations_df) + 10)

@@ -2,14 +2,14 @@
 #' 
 #' AVA of a feature is the ratio of its abundance and the most abundant metabolite in the same module 
 #' i.e. the "anchor". Anchor is an annotated/known feature if available or just the most abundant metabolic
-#' feature. For every feature, mean abundance in each phenotype or condition is calculated and the maximum is considered
-#' for AVA calculation. Singletons are assigned an AVA of 1.
+#' feature. For every feature, mean abundance in each phenotype or condition is calculated and the maximum is 
+#' considered for AVA calculation. Singletons are assigned an AVA of 1.
 #' 
-#' @param se SummarizedExperiment object created using MACARRoN::makeSumExp().
-#' @param mod.assn the output of MACARRoN::findMacMod().
-#' @param metadata_variable metadata of interest. Default: Column 2 of metadata table. 
-#' @param anchor_annotation anchor identification. Default: column 2 of annotation dataframe.
-#' Note: metadata_variable must be consistent across ava, q-value and effect-size calculations.
+#' @param se SummarizedExperiment object created using Macarron::prepInput().
+#' @param mod.assn the output of Macarron::findMacMod().
+#' @param metadata_variable name or index of metadata column identifying phenotypes/conditions to be used for evaluating AVA. Default: Column 1 of metadata dataframe. 
+#' Note: metadata_variable must be consistent across distance matrix, ava, q-value and effect-size calculations.
+#' @param anchor_annotation name or index of column containing common names of the annotated metabolite. Default: Column 2 of annotation dataframe.
 #' @return mac.ava abundance versus anchor values of metabolic features
 #' 
 #' @examples 
@@ -18,10 +18,10 @@
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 #' annotations_df = read.csv(file = prism_annotations, row.names = 1)
 #' prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-#' metadata_df = read.csv(file = prism_metadata)
+#' metadata_df = read.csv(file = prism_metadata, row.names = 1)
 #' met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 #' taxonomy_df = read.csv(file = met_taxonomy)
-#' mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+#' mbx <- Macarron::prepInput(input_abundances = abundances_df,
 #'                             input_annotations = annotations_df,
 #'                             input_metadata = metadata_df)
 #' w <- Macarron::makeDisMat(se = mbx)
@@ -35,31 +35,29 @@
 
 calAVA <- function(se, 
                    mod.assn,
-                   metadata_variable = NULL,
-                   anchor_annotation = NULL)
+                   metadata_variable = 1,
+                   anchor_annotation = 2)
   {
-  mod.assn <- as.data.frame(mod.assn)
+  mod.assn <- as.data.frame(mod.assn[[1]])
   fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[rownames(mod.assn),]
   fint <- t(fint)
   
   # Setting the metadata
-  if(is.null(metadata_variable)){
-    metadata_variable <- names(SummarizedExperiment::colData(se))[1]
-    message(paste0("Metadata chosen for AVA calculation: ",metadata_variable))
+  if(is.character(metadata_variable)){
+    metadata_variable <- metadata_variable
   }else{
-    metadata_variable = metadata_variable
-    message(paste0("Metadata chosen for AVA calculation: ",metadata_variable))
+    metadata_variable <- names(SummarizedExperiment::colData(se))[metadata_variable]
   }
-  grps <- unique(se[[metadata_variable]])
+  phenotypes <- unique(se[[metadata_variable]])
   
   # Identification of the anchor in each module
   anchors <- NULL
   modules <- sort(unique(mod.assn$module))
   
   # Function for anchor and the reference phenotype
+  message("Finding anchors")
   find.anchor <- function(m){
-    message(paste0("Finding anchor feature for module: ",m))
     if(dim(mod.assn[which(mod.assn$module == m & mod.assn[,1] != ""),])[1] > 0){
       # known features in the module
       r <- rownames(mod.assn[which(mod.assn$module == m & mod.assn[,1] != ""),])
@@ -67,10 +65,9 @@ calAVA <- function(se,
       # all features in the module
       r <- rownames(mod.assn[which(mod.assn$module == m),])
     }
-    
     # Mean abundances in phenotypes
     means <- NULL
-    for (g in grps){
+    for (g in phenotypes){
       ind <- se[[metadata_variable]] == g
       if(length(r) > 1){
         gmean <- apply(fint[ind,r],2,function(x) mean(x, na.rm = TRUE))
@@ -82,7 +79,7 @@ calAVA <- function(se,
       }
       means <- rbind(means,d)
     }
-    tail(means[order(means[3]),],1)
+    tail(means[order(means[,"mma"]),],1)
   }
   f.list <- do.call(rbind, lapply(modules, find.anchor))
   mod.assn$feature <- rownames(mod.assn)
@@ -98,14 +95,14 @@ calAVA <- function(se,
 
   
   # module members
+  message("Calculating AVA")
   cal.ava <- function(i){
-    message(paste0("Calculating AVA for feature: ",i))
     getMean <- function(g){
       ind <- se[[metadata_variable]] == g
       gmean <- mean(fint[ind,i], na.rm = TRUE)
       gmean
     }
-    all.means <- sapply(grps, getMean)
+    all.means <- vapply(phenotypes, getMean, numeric(1))
     ava.i <- max(all.means)/as.numeric(as.character(anchors[i,"mma"]))
   }
   members <- rownames(anchors[which(anchors$module != 0),])
@@ -122,10 +119,10 @@ calAVA <- function(se,
   
   # Assign anchors
   anno <- as.data.frame(SummarizedExperiment::rowData(se))
-  if(is.null(anchor_annotation)){
-    anchor_annotation <- colnames(anno)[2]
-  }else{
+  if(is.character(anchor_annotation)){
     anchor_annotation <- anchor_annotation
+  }else{
+    anchor_annotation <- names(anno[anchor_annotation])
   }
   
   ann.mod <- unique(mod.assn[which(mod.assn[,1] != ""),2])

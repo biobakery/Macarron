@@ -1,12 +1,11 @@
 Package: Macarron
-Version: 0.99.0
-Title: An R package for prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics studies
+Version: 0.99.1
+Title: Prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics datasets
 Authors@R: c(
   person("Amrisha", "Bhosle", email = "abhosle@broadinstitute.org", role = "aut"), 
   person("Ludwig", "Geistlinger", email = "Ludwig_Geistlinger@hms.harvard.edu", role = "aut"),
   person("Sagun", "Maharjan", email = "sagunmaharjann@gmail.com", role = c("aut", "cre"))
   )
-Maintainer: Sagun Maharjan <sagunmaharjann@gmail.com>
 Depends: 
     R (>= 4.2.0), 
     SummarizedExperiment
@@ -29,11 +28,19 @@ Imports:
     utils
 Suggests: 
     knitr,
+    BiocStyle,
     optparse,
     testthat (>= 2.1.0),
     rmarkdown, 
     markdown
-Description: MACARRoN is a workflow for the prioritization of interesting bioactive small molecules from metabolomics experiments. Prioritization integrates strengths of evidences of bioactivity such as covariation with a standard/known metabolite, abundance relative to a known metabolite and association with an environmental or phenotypic indicator of bioactivity. Broadly, the workflow consists of stratified clustering of metabolic spectral features which co-vary in abundance in a condition, transfer of functional annotations, estimation of relative abundance and differential abundance analysis to identify associations between features and phenotype/condition.
+Description: Macarron is a workflow for the prioritization of potentially bioactive
+    metabolites from metabolomics experiments. Prioritization integrates strengths of 
+    evidences of bioactivity such as covariation with a known metabolite, abundance
+    relative to a known metabolite and association with an environmental or phenotypic
+    indicator of bioactivity. Broadly, the workflow consists of stratified clustering
+    of metabolic spectral features which co-vary in abundance in a condition, transfer
+    of functional annotations, estimation of relative abundance and differential abundance
+    analysis to identify associations between features and phenotype/condition.
 VignetteBuilder: knitr
 License: MIT + file LICENSE
 URL: http://huttenhower.sph.harvard.edu/macarron

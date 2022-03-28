@@ -7,7 +7,7 @@
 calES(se, mac.qval)
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using Macarron::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::prepInput().}
 
 \item{mac.qval}{the output of Macarron::calQval().}
 }
@@ -25,10 +25,10 @@ abundances_df = read.csv(file = prism_abundances, row.names = 1)
 prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 annotations_df = read.csv(file = prism_annotations, row.names = 1)
 prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-metadata_df = read.csv(file = prism_metadata)
+metadata_df = read.csv(file = prism_metadata, row.names = 1)
 met_taxonomy = system.file("extdata", "demo_taxonomy.csv", package="Macarron")
 taxonomy_df = read.csv(file = met_taxonomy)
-mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+mbx <- Macarron::prepInput(input_abundances = abundances_df,
                             input_annotations = annotations_df,
                             input_metadata = metadata_df)
 w <- Macarron::makeDisMat(se = mbx)

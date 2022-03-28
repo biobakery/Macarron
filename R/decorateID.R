@@ -4,7 +4,7 @@
 #' ^^Column 1 must contain standard annotations such as HMDB ID or PubChem CID for 
 #' the subset of identified/annotated metabolic features. 
 #' 
-#' @return input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
+#' @return tax_df input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
 #' 
 #' @examples 
 #' prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
@@ -53,7 +53,5 @@ decorateID <- function(input_annotations)
     }
     colnames(tax_df) <- c(names(input_annotations)[1],"Sub_Class","Class")
     tax_df <- as.data.frame(tax_df)
-    file_name <- paste0(names(input_annotations)[1],"_taxonomy.csv")
-    write.csv(tax_df, file=file_name, row.names=FALSE)
-    return(tax_df)
+    tax_df
 }

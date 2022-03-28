@@ -6,16 +6,16 @@
 \usage{
 makeDisMat(
   se,
-  metadata_variable = NULL,
+  metadata_variable = 1,
   min_prevalence = 0.7,
   execution_mode = "serial",
   optimize.for = c("runtime", "memory")
 )
 }
 \arguments{
-\item{se}{SummarizedExperiment object created using Macarron::makeSumExp().}
+\item{se}{SummarizedExperiment object created using Macarron::prepInput().}
 
-\item{metadata_variable}{metadata (phenotype/condition) to be used to evaluate prevalence of features. Default = Column 2 of metadata table.}
+\item{metadata_variable}{metadata column identifying phenotypes/conditions to be used to evaluate prevalence of features. Default = Column 1 of metadata dataframe.}
 
 \item{min_prevalence}{prevalence threshold (percentage). Default = 0.7.}
 
@@ -41,8 +41,8 @@ abundances_df = read.csv(file = prism_abundances, row.names = 1)
 prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
 annotations_df = read.csv(file = prism_annotations, row.names = 1)
 prism_metadata = system.file("extdata", "demo_metadata.csv", package="Macarron")
-metadata_df = read.csv(file = prism_metadata)
-mbx <- Macarron::makeSumExp(input_abundances = abundances_df,
+metadata_df = read.csv(file = prism_metadata, row.names = 1)
+mbx <- Macarron::prepInput(input_abundances = abundances_df,
                             input_annotations = annotations_df,
                             input_metadata = metadata_df)
 w <- Macarron::makeDisMat(se = mbx)

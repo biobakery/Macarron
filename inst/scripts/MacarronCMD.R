@@ -3,7 +3,7 @@
 
 ###############################################################################
 
-# MACARRoN Command Line 
+# Macarron Command Line 
 
 ###############################################################################
 
@@ -18,12 +18,12 @@ args$input_abundances <- NULL
 args$input_annotations <- NULL
 args$input_metadata <- NULL
 args$input_taxonomy <- NULL
-args$output <- "MACARRoN_output"
-args$metadata_variable <- NULL
+args$output <- "Macarron_output"
+args$metadata_variable <- 1
 args$min_prevalence <- 0.7
 args$execution_mode <- execution_mode_choices[1]
-args$standard_identifier <- NULL
-args$anchor_annotation <- NULL
+args$standard_identifier <- 1
+args$anchor_annotation <- 2
 args$min_module_size <- NULL
 args$fixed_effects <- NULL
 args$random_effects <- NULL
@@ -32,12 +32,16 @@ args$cores <- 1
 args$plot_heatmap <- TRUE
 args$plot_scatter <- FALSE
 args$heatmap_first_n <- 50
+args$show_best <- TRUE
+args$priority_threshold <- 0.9
+args$per_module <- 10
+args$per_phenotype <- 1000
+args$only_characterizable <- TRUE
 
 
 ###############################################################################
 # Add command line arguments 
 ###############################################################################
-library(optparse)
 options <-
   optparse::OptionParser(usage = paste(
     "%prog [Inputs]\n",
@@ -66,7 +70,7 @@ options <-
     dest = "metadata_variable",
     default = args$metadata_variable,
     help = paste("Metadata column with bioactivity-relevant epidemiological or environmental conditions (factors)",
-                 "[Default: Second column of metadata table]")
+                 "[Default: Second column of metadata CSV file]")
   )
 options <-
   optparse::add_option(
@@ -100,7 +104,7 @@ options <-
     dest = "standard_identifier",
     default = args$standard_identifier,
     help = paste("Annotation such as HMDB/METLIN/PubChem ID for an annotated metabolite feature",
-                 "[Default: Second column of annotation table]")
+                 "[Default: Second column of annotation CSV file]")
   )
 options <- 
   optparse::add_option(
@@ -110,17 +114,17 @@ options <-
     dest = "anchor_annotation",
     default = args$anchor_annotation,
     help = paste("Metabolite name for an annotated metabolite feature",
-                 "[Default: Third column of annotation table]")
+                 "[Default: Third column of annotation CSV file]")
   )
 options <- 
   optparse::add_option(
     options,
     c("-c", "--min_module_size"),
-    type = "character",
+    type = "double",
     dest = "min_module_size",
     default = args$min_module_size,
     help = paste("Minimum module size for module generation",
-                 "[Default: %default (will be calculated by analyzing measures of success)]")
+                 "[Default: cube root of number of prevalent features]")
   )
 options <- 
   optparse::add_option(
@@ -173,7 +177,7 @@ options <-
 options <-
   optparse::add_option(
     options,
-    c("-h", "--plot_heatmap"),
+    c("-l", "--plot_heatmap"),
     type = "logical",
     dest = "plot_heatmap",
     default = args$plot_heatmap,
@@ -206,6 +210,63 @@ options <-
     )
   )
 
+options <-
+  optparse::add_option(
+    options,
+    c("-b", "--show_best"),
+    type = "logical",
+    dest = "show_best",
+    default = args$show_best,
+    help = paste("Write 1000 or fewer highly prioritized metabolic features 
+                 into a separate file [Default: %default]"
+    )
+  )
+
+options <-
+  optparse::add_option(
+    options,
+    c("-w", "--priority_threshold"),
+    type = "double",
+    dest = "priority_threshold",
+    default = args$priority_threshold,
+    help = paste("Cut-off of priority score for showing highly
+                 prioritized features [Default: %default]"
+    )
+  )
+
+options <-
+  optparse::add_option(
+    options,
+    c("-x", "--per_module"),
+    type = "double",
+    dest = "per_module",
+    default = args$per_module,
+    help = paste("Show first n highly prioritized features in a module [Default: %default]"
+    )
+  )
+
+options <-
+  optparse::add_option(
+    options,
+    c("-y", "--per_phenotype"),
+    type = "double",
+    dest = "per_phenotype",
+    default = args$per_phenotype,
+    help = paste("Show highly prioritized n features per phenotype/condition [Default: %default]"
+    )
+  )
+
+options <-
+  optparse::add_option(
+    options,
+    c("-z", "--only_characterizable"),
+    type = "logical",
+    dest = "only_characterizable",
+    default = args$only_characterizable,
+    help = paste("Show highly prioritized features in modules which contain at least
+                 one annotated metabolite [Default: %default]"
+    )
+  )
 
 if (identical(environment(), globalenv()) &&
     !length(grep("^source\\(", sys.calls()))) {
@@ -226,23 +287,27 @@ if (identical(environment(), globalenv()) &&
     )
   }
 
-library(Macarron)    
-prioritized_metabolites <- MACARRoN(positional_args[1],
-                                    positional_args[2],
-                                    positional_args[3],
-                                    positional_args[4],
-                                    current_args$output,
-                                    current_args$metadata_variable,
-                                    current_args$min_prevalence,
-                                    current_args$execution_mode,
-                                    current_args$standard_identifier,
-                                    current_args$anchor_annotation,
-                                    current_args$min_module_size,
-                                    current_args$fixed_effects,
-                                    current_args$random_effects,
-                                    current_args$reference,
-                                    current_args$cores,
-                                    current_args$plot_heatmap,
-                                    current_args$plot_scatter,
-                                    current_args$heatmap_first_n)     
+mac.result <- Macarron::Macarron(positional_args[1],
+                                 positional_args[2],
+                                 positional_args[3],
+                                 positional_args[4],
+                                 current_args$output,
+                                 current_args$metadata_variable,
+                                 current_args$min_prevalence,
+                                 current_args$execution_mode,
+                                 current_args$standard_identifier,
+                                 current_args$anchor_annotation,
+                                 current_args$min_module_size,
+                                 current_args$fixed_effects,
+                                 current_args$random_effects,
+                                 current_args$reference,
+                                 current_args$cores,
+                                 current_args$plot_heatmap,
+                                 current_args$plot_scatter,
+                                 current_args$heatmap_first_n,
+                                 current_args$show_best,
+                                 current_args$priority_threshold,
+                                 current_args$per_module,
+                                 current_args$per_phenotype,
+                                 current_args$only_characterizable)     
 }
