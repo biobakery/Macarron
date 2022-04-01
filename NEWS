@@ -1,2 +1,4 @@
-Changes in version 0.9.9 (2020-01-01):
-+ Add features to be used in auto-generated workflow.
+Changes in version 0.99.1:
++ Revisions after initial commit
+Changes in version 0.99.2:
++ Triggering a new Bioc build
