@@ -21,7 +21,11 @@ decorateID <- function(input_annotations)
     # function if HMDB Accession
     ChemTax_HMDB <- function(h){
         hmdb_url <- paste0("https://hmdb.ca/metabolites/",h,".xml")
-        Sys.sleep(0.1)
+        if(length(grep("Location", curlGetHeaders(hmdb_url))) > 0){
+          h_new <- stringr::str_extract(grep("Location", curlGetHeaders(hmdb_url), value = TRUE), "HMDB[0-9]*")
+          hmdb_url <- paste0("https://hmdb.ca/metabolites/",h_new,".xml")
+        }
+        Sys.sleep(sample(5,1)*0.1)
         if(RCurl::url.exists(hmdb_url)){
           hmdb_page <- xml2::read_xml(hmdb_url) 
           node_class <- xml2::xml_text(xml2::xml_find_all(hmdb_page, "//class"))
@@ -36,7 +40,7 @@ decorateID <- function(input_annotations)
         inchi_txt <- RCurl::getURL(pubchem_url)
         inchi_key <- gsub('.{1}$','',inchi_txt)
         classy_url <- paste0("http://classyfire.wishartlab.com/entities/",inchi_key,".json")
-        Sys.sleep(0.1)
+        Sys.sleep(sample(5,1)*0.1)
         if(RCurl::url.exists(classy_url)){
           classy_page <- RJSONIO::fromJSON(classy_url)
           node_class <- as.character(classy_page[['class']][1])

@@ -2,3 +2,8 @@ Changes in version 0.99.1:
 + Revisions after initial commit
 Changes in version 0.99.2:
 + Triggering a new Bioc build
+Changes in version 0.99.3:
++ Updated the annotation table in the vignette
+Changes in version 0.99.4:
++ Modified decorateID.R to accomodate HMDB ID variations
++ Modified priority score calculations

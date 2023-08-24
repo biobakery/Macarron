@@ -77,17 +77,14 @@ prioritize <- function(se,
     all.params$es <- abs(all.params$es)
     
     # Ranks
-    message("Assigning ranks")
-    all.params$ava_rank <- rank(all.params$ava)
-    all.params$qval_rank <- rank(-all.params$qval)
-    all.params$es_rank <- rank(all.params$es)
+    all.params$ava_rank_percentile <- rank(all.params$ava)/nrow(all.params)
+    all.params$qval_rank_percentile <- rank(-all.params$qval)/nrow(all.params)
+    all.params$es_rank_percentile <- rank(all.params$es)/nrow(all.params)
     
     # Meta-rank
     message("Calculating meta-rank and prioritizing metabolic features")
     all.params$meta_rank <- psych::harmonic.mean(t(all.params[,6:8]))
     ranked.features <- all.params[order(-all.params$meta_rank),]
-    rank.perc <- ecdf(all.params$meta_rank)
-    ranked.features$rank_percentile <- sapply(ranked.features$meta_rank, function(x) rank.perc(x))
     ranked.features <- as.data.frame(ranked.features)
   }
   prioritized.features <- as.data.frame(do.call(rbind, lapply(test.phenotypes, prioritize.each)))
@@ -102,14 +99,14 @@ prioritize <- function(se,
   prioritized.features$annotation3 <- anno[prioritized.features$feature, 3]
   prioritized.features$ava <- round(prioritized.features$ava, 4)
   prioritized.features$es <- round(prioritized.features$es, 4)
-  prioritized.features$rank_percentile <- round(prioritized.features$rank_percentile, 4)
+  prioritized.features$meta_rank <- round(prioritized.features$meta_rank, 4)
   
   # Final table of results
   all.prioritized <- cbind(prioritized.features[,c("feature",
                                               "annotation1",
                                               "annotation2",
                                               "annotation3",
-                                              "rank_percentile",
+                                              "meta_rank",
                                               "status",
                                               "module",
                                               "anchor",
