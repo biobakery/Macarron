@@ -1,5 +1,5 @@
 Package: Macarron
-Version: 0.99.4
+Version: 0.99.5
 Title: Prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics datasets
 Authors@R: c(
   person("Amrisha", "Bhosle", email = "abhosle@broadinstitute.org", role = "aut"), 
@@ -21,7 +21,7 @@ Imports:
     stats,
     psych,
     xml2,
-    RCurl,
+    httr,
     RJSONIO,
     logging,
     methods,

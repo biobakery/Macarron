@@ -26,7 +26,7 @@ decorateID <- function(input_annotations)
           hmdb_url <- paste0("https://hmdb.ca/metabolites/",h_new,".xml")
         }
         Sys.sleep(sample(5,1)*0.1)
-        if(RCurl::url.exists(hmdb_url)){
+        if(isFALSE(httr::http_error(hmdb_url))){
           hmdb_page <- xml2::read_xml(hmdb_url) 
           node_class <- xml2::xml_text(xml2::xml_find_all(hmdb_page, "//class"))
           node_subclass <- xml2::xml_text(xml2::xml_find_all(hmdb_page, "//sub_class"))
@@ -37,11 +37,12 @@ decorateID <- function(input_annotations)
     # function if PubChem Compound ID
     ChemTax_PubChem <- function(p){
         pubchem_url <- paste0("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/",p,"/property/InChIKey/TXT")
-        inchi_txt <- RCurl::getURL(pubchem_url)
+        options(warn=-1)
+        inchi_txt <- httr::content(httr::GET(pubchem_url), as="text")
         inchi_key <- gsub('.{1}$','',inchi_txt)
         classy_url <- paste0("http://classyfire.wishartlab.com/entities/",inchi_key,".json")
         Sys.sleep(sample(5,1)*0.1)
-        if(RCurl::url.exists(classy_url)){
+        if(isFALSE(httr::http_error(classy_url))){
           classy_page <- RJSONIO::fromJSON(classy_url)
           node_class <- as.character(classy_page[['class']][1])
           node_subclass <- as.character(classy_page[['subclass']][1])
