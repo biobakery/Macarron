@@ -21,7 +21,7 @@ Imports:
     stats,
     psych,
     xml2,
-    RCurl,
+    httr,
     RJSONIO,
     logging,
     methods,
