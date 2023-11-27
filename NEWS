@@ -7,3 +7,7 @@ Changes in version 0.99.3:
 Changes in version 0.99.4:
 + Modified decorateID.R to accomodate HMDB ID variations
 + Modified priority score calculations
+Changes in version 0.99.5:
++ Replaced RCurl with httr for Windows compatibility
+Changes in version 0.99.6:
++ Updated filename capitalizations to fix build error
