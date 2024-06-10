@@ -7,13 +7,21 @@ If you have questions, please direct it to:
 [Macarron Forum](https://forum.biobakery.org/c/microbial-community-profiling/Macarron)
 
 ## Installation ##
-Macarron requires R version 4.2.0 or higher. Install Bioconductor and then install Macarron:
+Macarron requires `R` version 4.2.0 or higher. Install [Bioconductor](https://bioconductor.org/packages/bugsigdbr/) and then install Macarron:
 
-```
-if(!requireNamespace("BiocManager", quietly = TRUE))
+```r
+if(!requireNamespace("BiocManager", quietly = TRUE)){
     install.packages("BiocManager")
+}
+
 BiocManager::install("Macarron")
 ```
+
+## Citation ##
+
+Amrisha Bhosle, Sena Bae, Yancong Zhang, Eunyoung Chun, Julian Avila-Pacheco, Ludwig Geistlinger, Gleb Pishchany, Jonathan N. Glickman, Monia Michaud, Levi Waldron, Clary Clish, Ramnik J. Xavier, Hera Vlamakis, Eric A. Franzosa, Wendy S. Garrett, Curtis Huttenhower (2024)
+Integrated annotation prioritizes metabolites with bioactivity in inflammatory bowel disease
+*Molecular Systems Biology*, doi:[10.1038/s44320-024-00027-8](https://doi.org/10.1038/s44320-024-00027-8)
 
 ## How to Run ##
 Macarron can be run from the command line or as an R function. Both methods require the same
@@ -34,16 +42,16 @@ formatting constraints are described below.
     * Second column must contain either HMDB ID or PubChem Compound Identifier (CID).
     * Third column must contain the name of the metabolite.
     * Fourth column must contain a continuous chemical property such as m/z or RT or shift/ppm.
-    * Other annotations such as RT, m/z or other identifiers can be listed column 4 onward.
+    * Other annotations such as LC-MS method, RT, m/z, or other identifiers can be listed column 4 onward.
 3. Sample metadata
     * Must contain samples in rows and metadata in columns.
-    * First column must identify samples.
+    * First column must identify samples. Sample names must overlap between the metadata file and the feture abundances file.
     * Second column must contain categorical metadata relevant to prioritization such as phenotypes, exposures or environments.
 4. Chemical taxonomy
     * First column must contain the HMDB ID or PubChem CID. IDs must be consistent between annotation and taxonomy files.
     * Second and third columns must contain chemical subclass and class of the respective metabolite.
     
-If you do not have the chemical taxonomy file, you can generate this file using the annotation dataframe and Macarron utility `decorate_ID` (see Advanced Topics).
+If you do not have the chemical taxonomy file, you can generate this file using the annotation dataframe and Macarron utility `decorate_ID`.
 
 ### Output Files ###
 By default, all files will be stored in a folder named Macarron_output inside the current working directory. The main prioritization results are stored in ``prioritized_metabolites_all.csv``. Another file, ``prioritized_metabolites_characterizable.csv`` is a subset of ``prioritized_metabolites_all.csv`` and only contains metabolic features which covary with at least one annotated metabolite.
@@ -61,7 +69,7 @@ The columns in these output files are:
 - Covaries_with_standard: 1 (yes) and 0 (no). Column specifies if the metabolic feature covaries with at least one annotated (standard) metabolite.
 - AVA: Abundance versus anchor which is a ratio of the highest abundance (in any phenotype) of a metabolic feature and highest abundance of the covarying anchor. Naturally, the AVA of an anchor metabolite is 1.
 - qvalue: Estimated from multivariate linear model using `Maaslin2`.
-- effect_size
+- effect_size: Difference in log2-transformed abundances of a metabolic feature in case(s) and control phenotypes.
 - Remaining columns from the annotation dataframe are appended.
 
 ### Run a demo in R ###
@@ -69,7 +77,7 @@ The columns in these output files are:
 #### Using CSV files as inputs ####
 Example (demo) input files can be found under ``inst/extdata`` folder of the `Macarron` source. These files were generated from the [PRISM](https://pubmed.ncbi.nlm.nih.gov/30531976/) study of stool metabolomes of individuals with inflammatory bowel disease (IBD) and healthy "Control" individuals. Control and IBD are the two phenotypes in this example. Macarron will be applied to prioritize metabolic features with respect to their bioactivity in IBD. Therefore, in this example, the phenotype of interest is "IBD" and the reference phenotype is "Control". The four input files are ``demo_abundances.csv``, ``demo_annotations.csv``, ``demo_metadata.csv``, and ``demo_taxonomy.csv``. 
 
-```
+```r
 library(Macarron)
 prism_abundances <- system.file(
     'extdata','demo_abundances.csv', package="Macarron")
@@ -86,7 +94,7 @@ prism_prioritized <- Macarron::Macarron(input_abundances = prism_abundances,
 ```
 
 #### Using dataframes as inputs ####
-```
+```r
 abundances_df = read.csv(file = prism_abundances, row.names = 1) # setting features as rownames
 annotations_df = read.csv(file = prism_annotations, row.names = 1) # setting features as rownames
 metadata_df = read.csv(file = prism_metadata, row.names = 1) # setting samples as rownames 

@@ -57,8 +57,8 @@ Macarron <-
     random_effects = NULL,
     reference = NULL,
     cores = 1,
-    plot_heatmap = TRUE,
-    plot_scatter = FALSE,
+    plot_heatmap = FALSE,
+    plot_scatter = TRUE,
     heatmap_first_n = 50,
     show_best = TRUE,
     priority_threshold = 0.9,
@@ -295,13 +295,13 @@ Macarron <-
                             per_module = per_module,
                             per_phenotype = per_phenotype,
                             only_characterizable = only_characterizable)
-    }
     phenotypes <- unique(best.mets$phenotype[best.mets$phenotype!=""])
     for(p in phenotypes){
       file_name <- paste0("highly_prioritized_per_module_in_",p,".csv")
       file_loc = file.path(output, file_name)
       logging::loginfo(paste0("Writing highly prioritized metabolites in ",p," to file: ",file_loc))
       write.csv(best.mets[which(best.mets$phenotype == p),], file=file_loc, row.names=FALSE)
+    }
     }
     mac.result                                                                                                                                                                                                
   }
