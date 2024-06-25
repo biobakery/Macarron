@@ -11,8 +11,10 @@ Changes in version 0.99.5:
 + Replaced RCurl with httr for Windows compatibility
 Changes in version 0.99.6:
 + Updated filename capitalizations to fix build error
-Changes in version 0.99.7:
+Changes in version 1.9.1:
++ Synced Version with Bioconductor
 + Added citation
 + Updated README 
 + Changed heatmap plotting default to FALSE
 + Corrected curly bracket placement in wrapper
+
