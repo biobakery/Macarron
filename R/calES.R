@@ -37,8 +37,7 @@ calES <- function(se,
   # Abundance matrix
   fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[unique(mac.qval$feature),]
-  fint[is.na(fint)] <- 0
-  fint <- log2(fint + 1)
+  fint <- log2(fint)
   fint <- t(fint)
   
   # Get phenotype from mac.qval
