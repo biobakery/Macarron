@@ -17,4 +17,5 @@ Changes in version 1.9.1:
 + Updated README 
 + Changed heatmap plotting default to FALSE
 + Corrected curly bracket placement in wrapper
-
+Chanes in versiom 1.13.1:
++ Kept NAs as NAs in calES.R and calQval.R
