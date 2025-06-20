@@ -60,6 +60,7 @@ calQval <- function(se,
   fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[rownames(mod.assn),]
   fint <- log2(fint)
+  fint[is.na(fint)] <- 0
   meta <- as.data.frame(SummarizedExperiment::colData(se))
   
   # q-value estimation with Maaslin2

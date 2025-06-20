@@ -13,7 +13,7 @@ calQval(
   reference = NULL,
   output_folder = NULL,
   cores = 1,
-  plot_heatmap = TRUE,
+  plot_heatmap = FALSE,
   plot_scatter = FALSE,
   heatmap_first_n = 50
 )

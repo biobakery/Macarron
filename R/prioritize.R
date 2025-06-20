@@ -59,10 +59,11 @@ prioritize <- function(se,
   prioritize.each <- function(p){
     sub.qval <- mac.qval[which(mac.qval$value == p),]
     rownames(sub.qval) <- sub.qval$feature
-    all.params <- as.data.frame(cbind(rownames(mac.ava),
-                                      mac.ava[,"ava"],
-                                      sub.qval[rownames(mac.ava),"qvalue"],
-                                      mac.es[rownames(mac.ava),p]))
+    features <- intersect(rownames(sub.qval),rownames(mac.ava))
+    all.params <- as.data.frame(cbind(features,
+                                      mac.ava[features,"ava"],
+                                      sub.qval[features,"qvalue"],
+                                      mac.es[features,p]))
     colnames(all.params) <- c("feature","ava","qval","es")
     
     
