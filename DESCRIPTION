@@ -47,4 +47,4 @@ URL: http://huttenhower.sph.harvard.edu/macarron
 Encoding: UTF-8
 biocViews: Sequencing, Metabolomics, Coverage, FunctionalPrediction, Clustering
 BugReports: https://forum.biobakery.org/c/microbial-community-profiling/macarron
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.2

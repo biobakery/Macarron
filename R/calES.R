@@ -38,6 +38,7 @@ calES <- function(se,
   fint <- as.data.frame(SummarizedExperiment::assay(se))
   fint <- fint[unique(mac.qval$feature),]
   fint <- log2(fint)
+  fint[is.na(fint)] <- 0
   fint <- t(fint)
   
   # Get phenotype from mac.qval
