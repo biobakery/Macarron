@@ -19,3 +19,6 @@ Changes in version 1.9.1:
 + Corrected curly bracket placement in wrapper
 Changes in version 1.12.1
 + Kept NAs as NAs in calES.R and calQval.R
+Changes in version 1.12.2:
++ Changed NAs to zeros in calES.R and calQval.R
++ Features common across AVA, Qval, and ES are prioritized
