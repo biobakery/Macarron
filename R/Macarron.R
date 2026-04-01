@@ -117,7 +117,7 @@ Macarron <-
     mac_log_file <- file.path(output, "Macarron.log")
     # remove log file if it exists 
     if (file.exists(mac_log_file)) {
-      print(paste("Warning: Deleting existing log file: ", mac_log_file))
+      message("Warning: Deleting existing log file: ", mac_log_file)
       unlink(mac_log_file)
     }
     logging::basicConfig(level = 'FINEST')
@@ -298,7 +298,7 @@ Macarron <-
     phenotypes <- unique(best.mets$phenotype[best.mets$phenotype!=""])
     for(p in phenotypes){
       file_name <- paste0("highly_prioritized_per_module_in_",p,".csv")
-      file_loc = file.path(output, file_name)
+      file_loc <- file.path(output, file_name)
       logging::loginfo(paste0("Writing highly prioritized metabolites in ",p," to file: ",file_loc))
       write.csv(best.mets[which(best.mets$phenotype == p),], file=file_loc, row.names=FALSE)
     }

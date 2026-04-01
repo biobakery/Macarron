@@ -47,9 +47,9 @@ calES <- function(se,
   
   # Mean abundance of feature in each group of metadata_variable
   get.mean <- function(g){
-    message(paste0("Calculating mean abundance in: ",g))
+    message("Calculating mean abundance in: ", g)
     ind <- se[[metadata_variable]] == g
-    m <- sapply(colnames(fint), function(f) mean(fint[ind,f]))
+    m <- vapply(colnames(fint), function(f) mean(fint[ind,f]), numeric(1))
   }
   all.means <- as.data.frame(do.call(cbind, lapply(phenotypes, get.mean)))
   colnames(all.means) <- phenotypes
@@ -58,7 +58,7 @@ calES <- function(se,
   test.phenotypes <- unique(mac.qval$value)
   ref.phenotype <- setdiff(phenotypes, test.phenotypes)
   get.es <- function(test.phenotype){
-    message(paste0("Calculating effect size in: ",test.phenotype))
+    message("Calculating effect size in: ",test.phenotype)
     es <- all.means[,test.phenotype]- all.means[,ref.phenotype]
   }
   mac.es <- as.data.frame(do.call(cbind, lapply(test.phenotypes, get.es)))

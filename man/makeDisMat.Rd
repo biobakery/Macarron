@@ -8,6 +8,7 @@ makeDisMat(
   se,
   metadata_variable = 1,
   min_prevalence = 0.7,
+  nthreads = 0,
   execution_mode = "serial",
   optimize.for = c("runtime", "memory")
 )
@@ -18,6 +19,8 @@ makeDisMat(
 \item{metadata_variable}{metadata column identifying phenotypes/conditions to be used to evaluate prevalence of features. Default = Column 1 of metadata dataframe.}
 
 \item{min_prevalence}{prevalence threshold (percentage). Default = 0.7.}
+
+\item{nthreads}{number of processors}
 
 \item{execution_mode}{"serial" or "multi" processing with BiocParallel. Default: "serial" (recommended for laptops). 
 "multi" may be used when running Macarron on a cluster.}

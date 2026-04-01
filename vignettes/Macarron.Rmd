@@ -28,7 +28,7 @@ If you have questions, please direct it to:
 
 Macarron requires R version 4.2.0 or higher. Install Bioconductor and then install Macarron:
 
-```{r, eval=FALSE}
+```{r installation, eval=FALSE}
 if(!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("Macarron")
@@ -89,7 +89,7 @@ The columns in these output files are:
 ### Using CSV files as inputs
 Example (demo) input files can be found under ``inst/extdata`` folder of the `Macarron` source. These files were generated from the [PRISM](https://pubmed.ncbi.nlm.nih.gov/30531976/) study of stool metabolomes of individuals with inflammatory bowel disease (IBD) and healthy "Control" individuals. Control and IBD are the two phenotypes in this example. Macarron will be applied to prioritize metabolic features with respect to their bioactivity in IBD. Therefore, in this example, the phenotype of interest is "IBD" and the reference phenotype is "Control". The four input files are ``demo_abundances.csv``, ``demo_annotations.csv``, ``demo_metadata.csv``, and ``demo_taxonomy.csv``. 
 
-```{r}
+```{r input-files}
 library(Macarron)
 prism_abundances <- system.file(
     'extdata','demo_abundances.csv', package="Macarron")
@@ -106,7 +106,7 @@ prism_prioritized <- Macarron::Macarron(input_abundances = prism_abundances,
 ```
 
 ### Using dataframes as inputs
-```{r, eval=FALSE}
+```{r dataframes-as-inputs, eval=FALSE}
 abundances_df = read.csv(file = prism_abundances, row.names = 1) # setting features as rownames
 annotations_df = read.csv(file = prism_annotations, row.names = 1) # setting features as rownames
 metadata_df = read.csv(file = prism_metadata, row.names = 1) # setting samples as rownames 
@@ -121,7 +121,7 @@ prism_prioritized <- Macarron::Macarron(input_abundances = abundances_df,
 
 ### Running Macarron as individual functions
 The `Macarron::Macarron()` function is a wrapper for the Macarron framework. Users can also apply individual functions on the input dataframes to achieve same results as the wrapper with the added benefit of storing output from each function for other analyses. There are seven steps:
-```{r,eval = FALSE}
+```{r running-individual-functions, eval = FALSE}
 # Step 1: Storing input data in a summarized experiment object
 prism_mbx <- prepInput(input_abundances = abundances_df,
                        input_annotations = annotations_df,
@@ -168,7 +168,7 @@ prism_highly_prioritized <- showBest(prism_prioritized)
 
 Session info from running the demo in R can be displayed with the following command.
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```
 
@@ -176,9 +176,11 @@ sessionInfo()
 
 ### Generating the input chemical taxonomy file
 The input taxonomy dataframe can be generated using the input metabolic features annotation dataframe using `Macarron::decorateID()`. This function annotates an HMDB ID or a PubChem CID with the chemical class and subclass of the metabolite.
-```{r, eval=FALSE}
+```{r generate-taxonomy-file}
+prism_annotations <-system.file(
+    'extdata','demo_annotations.csv', package="Macarron")
+annotations_df <- read.csv(file = prism_annotations, row.names = 1) # setting features as rownames
 taxonomy_df <- decorateID(input_annotations = annotations_df)
-write.csv(taxonomy_df, file="demo_taxonomy.csv", row.names = FALSE)
 ```
 
 ### Accessory output files
@@ -205,7 +207,7 @@ This folder contains the Maaslin2 log file (maaslin2.log), significant associati
 ### Changing defaults
 #### Filtering metabolic features based on prevalence
 Ideally, at least 50% metabolic features must be retained after prevalence filtering. By default, Macarron uses the union of metabolic features observed (non-zero abundance) in at least 70% samples of any phenotype for further analysis. This prevalence threshold may be high for some metabolomics datasets and can be changed using the `min_prevalence` argument.
-```{r, eval=FALSE}
+```{r change-prevalence, eval=FALSE}
 prism_prioritized <- Macarron::Macarron(input_abundances = abundances_df,
                                         input_annotations = annotations_df,
                                         input_metadata = metadata_df,
@@ -218,7 +220,7 @@ prism_w <- makeDisMat(se = prism_mbx,
 
 ### Minimum module size
 By default, cube root of the total number of prevalent features is used as the minimum module size (MMS) (argument: `min_module_size`) for module detection and generation. We expect this to work for most real world datasets. To determine if the modules are optimal for further analysis, Macarron evaluates several measures of success (MOS) as described above. In addition to evaluating MOS for modules generated using the default MMS, Macarron also evaluates MOS for MMS values that are larger (MMS+5, MMS+10) and smaller (MMS-5, MMS-10) than the default MMS. If you find that the MOS improve with larger or smaller MMS, you may change the default accordingly. For more details about module detection, please see `WGCNA` and `dynamicTreeCut`.
-```{r, eval=FALSE}
+```{r change-min-module-size, eval=FALSE}
 # See MOS of modules generated using default
 prism_modules <- findMacMod(se = prism_mbx,
                             w = prism_w,
@@ -236,7 +238,7 @@ prism_modules <- findMacMod(se = prism_mbx,
 ### Specifying fixed effects, random effects and reference
 Macarron uses Maaslin2 for determining the q-value of differential abundance in a phenotype of interest. For default execution, the phenotype of interest must be a category in column 1 of the metadata dataframe e.g. IBD in diagnosis in the demo. This is also the column that is picked by the `metadata_variable` argument for identifying the main phenotypes/conditions in any dataset (see Macarron.log file). Further, in the default execution, all columns in the metadata table are considered as fixed effects and the alphabetically first categorical variable in each covariate with two categories is considered as the reference. Maaslin2 requires reference categories to be explicitly defined for all categorical metadata with more than two categories.
 Defaults can be changed with the arguments `fixed_effects`, `random_effects` and `reference`. In the demo example, `fixed effects` and `reference` can be defined as follows:
-```{r, eval=FALSE}
+```{r specify-covariates, eval=FALSE}
 prism_qval <- calQval(se = prism_mbx,
                       mod.assn = prism_modules,
                       metadata_variable = "diagnosis",

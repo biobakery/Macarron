@@ -1,5 +1,5 @@
 Package: Macarron
-Version: 1.15.0
+Version: 1.15.1
 Title: Prioritization of potentially bioactive metabolic features from epidemiological and environmental metabolomics datasets
 Authors@R: c(
   person("Amrisha", "Bhosle", email = "amrishabhosle@gmail.com", role = "aut"), 
@@ -7,7 +7,7 @@ Authors@R: c(
   person("Sagun", "Maharjan", email = "sagunmaharjann@gmail.com", role = c("aut", "cre"))
   )
 Depends: 
-    R (>= 4.2.0), 
+    R (>= 4.5.0), 
     SummarizedExperiment
 Imports: 
     BiocParallel,
@@ -20,9 +20,6 @@ Imports:
     plyr,
     stats,
     psych,
-    xml2,
-    httr,
-    RJSONIO,
     logging,
     methods,
     utils
@@ -47,4 +44,4 @@ URL: http://huttenhower.sph.harvard.edu/macarron
 Encoding: UTF-8
 biocViews: Sequencing, Metabolomics, Coverage, FunctionalPrediction, Clustering
 BugReports: https://forum.biobakery.org/c/microbial-community-profiling/macarron
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

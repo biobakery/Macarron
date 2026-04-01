@@ -134,11 +134,15 @@ findMacMod <- function(se,
       
       # % features in homogeneously annotated modules
       dat <- as.data.frame(unique(mod.assn.ann))
-      dat$class <- sapply(as.character(dat[,1]), 
-                          function(x) as.character(input_taxonomy[which(input_taxonomy[,1] == x),3]))
+      dat$class <- vapply(
+        as.character(dat[, 1]),
+        function(x) {
+          vals <- as.character(input_taxonomy[input_taxonomy[, 1] == x, 3])
+          if (length(vals) == 0L) "" else vals[1L]
+        },
+        FUN.VALUE = character(1)
+      )
       rownames(dat) <- NULL
-      dat$class <- as.character(dat$class)
-      dat$class[which(dat$class == "character(0)")] <- ""
       dat <- dat[which(dat$class != ""),]
       mods.with.tax <- as.data.frame(sort(unique(dat[,2])))
       names(mods.with.tax) <- "module"
@@ -151,7 +155,11 @@ findMacMod <- function(se,
         max(class.counts$Freq)/annotated.features
       }
       
-      mods.with.tax$homo <- sapply(mods.with.tax$module, function(m) findClassHomo(m))
+      mods.with.tax$homo <- vapply(
+        mods.with.tax$module,
+        findClassHomo,
+        FUN.VALUE = numeric(1)
+      )
       mods.with.tax$homo <- as.numeric(as.character(mods.with.tax$homo))
       homogeneous.mods <- unique(mods.with.tax[which(mods.with.tax$homo >= 0.75),"module"])
       
@@ -199,10 +207,20 @@ findMacMod <- function(se,
       classes <- ""
     }
   }
-  ann.mod$classes <- as.character(sapply(ann.mod$module, function(m) assignChemTax(m)))
-  ann.mod[ann.mod == "character(0)"] <- ""
-  mod.assn$classes <- as.character(sapply(mod.assn$module, function(m) ann.mod[which(ann.mod$module == m),2]))
-  mod.assn[mod.assn == "character(0)"] <- ""
+  
+  ann.mod$classes <- vapply(
+    ann.mod$module,
+    assignChemTax,
+    FUN.VALUE = character(1)
+  )
+  mod.assn$classes <- vapply(
+    mod.assn$module,
+    function(m) {
+      vals <- as.character(ann.mod[ann.mod$module == m, "classes"])
+      if (length(vals) == 0L) "" else vals[1L]
+    },
+    FUN.VALUE = character(1)
+  )
   mod.assn$classes <- gsub(",",";",mod.assn$classes)
   mod.assn <- list(mod.assn,mac.mos)
   mod.assn

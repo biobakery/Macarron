@@ -3,6 +3,7 @@
 #' @param se SummarizedExperiment object created using Macarron::prepInput().
 #' @param metadata_variable metadata column identifying phenotypes/conditions to be used to evaluate prevalence of features. Default = Column 1 of metadata dataframe.
 #' @param min_prevalence prevalence threshold (percentage). Default = 0.7.
+#' @param nthreads number of processors
 #' @param execution_mode "serial" or "multi" processing with BiocParallel. Default: "serial" (recommended for laptops). 
 #' "multi" may be used when running Macarron on a cluster. 
 #' @param optimize.for runtime or memory.
@@ -31,6 +32,7 @@
 makeDisMat <- function(se, 
                        metadata_variable = 1,
                        min_prevalence = 0.7,
+                       nthreads = 0,
                        execution_mode = "serial",
                        optimize.for = c("runtime", "memory"))
 {
@@ -80,7 +82,7 @@ makeDisMat <- function(se,
       tmp[rownames(gmat), colnames(gmat)] <- gmat
       tmp <- log2(tmp)
       options(warn=-1)
-      cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
+      cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05, nThreads = nthreads)
       options(warn=0)
       cmat[is.na(cmat)] <- 0
       cmat[cmat < 0] <- 0
@@ -109,7 +111,7 @@ makeDisMat <- function(se,
         tmp[rownames(gmat), colnames(gmat)] <- gmat
         tmp <- log2(tmp)
         options(warn=-1)
-        cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05)
+        cmat <- WGCNA::bicor(t(tmp), use = "pairwise.complete.obs", quick=0.05, nThreads = nthreads)
         options(warn=0)
         cmat[is.na(cmat)] <- 0
         cmat[cmat < 0] <- 0
@@ -119,7 +121,7 @@ makeDisMat <- function(se,
     # Keep the best observed positive correlation for each pair of features
     mmat <- matrix(0, nrow=nrow(mat), ncol=nrow(mat))
     for(j in ls(pattern="_ff")){
-      for(k in 1:nrow(mmat)){
+      for(k in seq_len(nrow(mmat))){
         mmat[,k] <- pmax(mmat[,k],get(j)[,k],na.rm=TRUE)
         }
     }
@@ -128,11 +130,11 @@ makeDisMat <- function(se,
     }
   
   # Beta-scaling
-  mmat = mmat^3 
+  mmat <- mmat^3 
     
   # Distance matrix
-  w = 1 - mmat
-  message(paste0("Distance matrix with ",nrow(w)," features created."))
+  w <- 1 - mmat
+  message("Distance matrix with ",nrow(w)," features created.")
   w
 }
   

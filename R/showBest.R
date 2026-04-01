@@ -99,7 +99,11 @@ showBest <- function(mac.result,
     df_cat <- as.data.frame(do.call(rbind, lapply(module_rep$module, analyze.module)))
     rownames(df_cat) <- seq_len(nrow(df_cat))
     df_cat <- head(df_cat, as.numeric(tail(rownames(head(df_cat[complete.cases(df_cat),],per_phenotype)),1)))
-    df_cat <- df_cat[,c(1:4, ncol(df_cat), 5:(ncol(df_cat)-1))]
+    df_cat <- df_cat[, c(
+      seq_len(4L),
+      ncol(df_cat),
+      seq.int(5L, ncol(df_cat) - 1L)
+    )]
     df_cat <- cbind(seq_len(nrow(df_cat)), df_cat)
     names(df_cat)[1] <- "Row"
     df_cat[is.na(df_cat)] <- ""

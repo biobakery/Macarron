@@ -67,9 +67,9 @@ calQval <- function(se,
  
   # Default output folder
   if(is.null(output_folder)){
-    output_folder = "maaslin2_output"
+    output_folder <- "maaslin2_output"
   }else{
-    output_folder = output_folder
+    output_folder <- output_folder
   }
   
   # Fitting

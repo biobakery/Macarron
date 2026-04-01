@@ -133,10 +133,31 @@ calAVA <- function(se,
   assignAnchor <- function(m){
       anchor.feature <- rownames(ava[which(ava$module == m & ava$ava == 1),])
       anchor.name <- as.character(anno[anchor.feature, anchor_annotation])
-    }
-  ann.mod$anchor <- as.character(sapply(ann.mod$module, function(m) assignAnchor(m)))
-  ann.mod[ann.mod == "character(0)"] <- ""
-  ava$anchor <- as.character(sapply(ava$module, function(m) ann.mod[which(ann.mod$module == m),2]))
-  ava[ava == "character(0)"] <- ""
+  }
+  
+  ann.mod$anchor <- vapply(
+    ann.mod$module,
+    function(m) {
+      vals <- as.character(assignAnchor(m))
+      if (length(vals) == 0L) {
+        ""
+      } else {
+        vals[1L]
+      }
+    },
+    FUN.VALUE = character(1)
+  )
+  ava$anchor <- vapply(
+    ava$module,
+    function(m) {
+      vals <- as.character(ann.mod[ann.mod$module == m, "anchor"])
+      if (length(vals) == 0L) {
+        ""
+      } else {
+        vals[1L]
+      }
+    },
+    FUN.VALUE = character(1)
+  )
   ava
 }

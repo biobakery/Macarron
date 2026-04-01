@@ -45,7 +45,7 @@ prepInput <- function(input_abundances,input_annotations,input_metadata)
   input_abundances <- input_abundances[,intersect(names(input_abundances),rownames(input_metadata))]
   input_metadata <- input_metadata[intersect(names(input_abundances),rownames(input_metadata)),]
   
-  message(paste0("Samples with both abundances and metadata: ",nrow(input_metadata)))
+  message("Samples with both abundances and metadata: ",nrow(input_metadata))
   
   #Make SE object
   se <- SummarizedExperiment::SummarizedExperiment(assays = input_abundances,

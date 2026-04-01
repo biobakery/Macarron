@@ -2,20 +2,32 @@
 % Please edit documentation in R/decorateID.R
 \name{decorateID}
 \alias{decorateID}
-\title{Create a chemical taxonomy table for annotated metabolic features.}
+\title{Create a chemical taxonomy table for annotated metabolic features.
+Uses a pregenerated chemical taxonomy table shipped with the package
+to assign chemical subclass and class to annotated features.}
 \usage{
-decorateID(input_annotations)
+decorateID(input_annotations, chemical_taxonomy = NULL)
 }
 \arguments{
 \item{input_annotations}{a dataframe (features x annotations) containing the available feature annotations.
 ^^Column 1 must contain standard annotations such as HMDB ID or PubChem CID for 
 the subset of identified/annotated metabolic features.}
+
+\item{chemical_taxonomy}{Optional data frame with columns
+\code{hmdb_id}, \code{pubchem_compound_id}, \code{sub_class},
+and \code{class}. If \code{NULL} (default), the built-in
+ \code{chem_taxonomy} dataset is loaded via \code{data()}.}
 }
 \value{
-tax_df input_taxonomy-dataframe containing ID (HMDB or PubChem), chemical sub class and chemical class of annotated metabolic features.
+A data frame with three columns: ID (same type as the first
+ column of \code{input_annotations}), \code{Sub_Class} and \code{Class},
+ for the subset of features whose IDs are present in
+ \code{chemical_taxonomy}.
 }
 \description{
 Create a chemical taxonomy table for annotated metabolic features.
+Uses a pregenerated chemical taxonomy table shipped with the package
+to assign chemical subclass and class to annotated features.
 }
 \examples{
 prism_annotations = system.file("extdata", "demo_annotations.csv", package="Macarron")
