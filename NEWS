@@ -22,3 +22,5 @@ Changes in versiom 1.13.1:
 Changes in version 1.13.2:
 + Changed NAs to zeros in calES.R and calQval.R
 + Features common across AVA, Qval, and ES are prioritized
+Changes in version 1.15.1:
++ decorateID.R uses pre-generated taxonomy table
