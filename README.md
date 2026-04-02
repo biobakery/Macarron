@@ -7,7 +7,7 @@ If you have questions, please direct it to:
 [Macarron Forum](https://forum.biobakery.org/c/microbial-community-profiling/Macarron)
 
 ## Installation ##
-Macarron requires `R` version 4.2.0 or higher. Install [Bioconductor](https://bioconductor.org/packages/bugsigdbr/) and then install Macarron:
+Macarron requires `R` version 4.5.0 or higher. Install [Bioconductor](https://bioconductor.org/packages/bugsigdbr/) and then install Macarron:
 
 ```r
 if(!requireNamespace("BiocManager", quietly = TRUE)){
@@ -51,7 +51,7 @@ formatting constraints are described below.
     * First column must contain the HMDB ID or PubChem CID. IDs must be consistent between annotation and taxonomy files.
     * Second and third columns must contain chemical subclass and class of the respective metabolite.
     
-If you do not have the chemical taxonomy file, you can generate this file using the annotation dataframe and Macarron utility `decorate_ID`.
+If you do not have the chemical taxonomy file, you can generate this file using the annotation dataframe and Macarron utility `decorateID`.
 
 ### Output Files ###
 By default, all files will be stored in a folder named Macarron_output inside the current working directory. The main prioritization results are stored in ``prioritized_metabolites_all.csv``. Another file, ``prioritized_metabolites_characterizable.csv`` is a subset of ``prioritized_metabolites_all.csv`` and only contains metabolic features which covary with at least one annotated metabolite.
